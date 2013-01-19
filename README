@@ -1,0 +1,7 @@
+Building the source 
+
+ $ mkdir build 
+ $ cd build 
+ $ cmake ..
+ $ make 
+

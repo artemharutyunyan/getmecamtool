@@ -15,7 +15,6 @@ typedef struct webui_data_blob_t {
   char*  data;   
 } webui_data_blob;
 
-
 ///! Web UI file header 
 #pragma pack(push, 4) 
 typedef struct webui_file_header_t {

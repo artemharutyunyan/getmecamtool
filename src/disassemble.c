@@ -12,9 +12,8 @@
 #include <stdlib.h>
 
 #include "disassemble.h"
+#include "common.h"
 
-#define MAX_FILE_NAME 1024
-#define MAX_FILE_SIZE 1048576
 #define DEFAULT_PATH "./"
 #define WEBUI_MAGIC 1141676733
 
@@ -77,8 +76,8 @@ int extract_files(FILE *f, const char *dst_path)
   int   len = 0,
         max_buf = 0,
         type = 0;
-  char  file_name[MAX_FILE_NAME],
-        dst_file[MAX_FILE_NAME],
+  char  file_name[MAX_FILE_NAME_LEN],
+        dst_file[MAX_FILE_NAME_LEN],
         *buf = NULL;
 
   while(!feof(f)) {
@@ -130,8 +129,8 @@ int main(int argc, char **argv) {
   }
   char o;
   int check = 0;
-  char in_file_name[MAX_FILE_NAME] = { 0 };
-  char dst_path[MAX_FILE_NAME] = { 0 };
+  char in_file_name[MAX_FILE_NAME_LEN] = { 0 };
+  char dst_path[MAX_FILE_NAME_LEN] = { 0 };
   while((o = getopt(argc, argv, ":c:d:ho:")) != -1) {
     switch (o) {
       case 'c':

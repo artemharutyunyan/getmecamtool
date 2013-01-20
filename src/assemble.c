@@ -14,10 +14,12 @@
 #include "assemble.h"
 #include "camtool.h"
 
+#include "common.h"
+
 #define TODO_HARDCODED_DIR_NAME "testdir"
 
 int main() {
-  list_target_dir (TODO_HARDCODED_DIR_NAME);
+  traverse_target_dir (TODO_HARDCODED_DIR_NAME);
   return 0;
 }
 
@@ -25,8 +27,8 @@ int main() {
 
 /// \brief Appends a file name to the path  
 char* append_file_name (char* path, const char* fname) {
-  const size_t path_len = strlen (path);
-  const size_t fname_len = strlen (fname);
+  const size_t path_len = strlen (path),
+               fname_len = strlen (fname);
 
   assert ((path_len + fname_len) < MAX_PATH_LEN);
 
@@ -40,8 +42,8 @@ char* append_file_name (char* path, const char* fname) {
 
 /// \brief Given a directory name and the file name creates a path to a file   
 char* create_path (char* path, const char*dirname, const char* fname) {
-  const size_t dirname_len = strlen (dirname);
-  const size_t fname_len = strlen (fname); 
+  const size_t dirname_len = strlen (dirname),
+               fname_len = strlen (fname); 
   
   assert ((dirname_len + fname_len) < MAX_PATH_LEN);
 
@@ -51,7 +53,7 @@ char* create_path (char* path, const char*dirname, const char* fname) {
   return path; 
 }
 
-int list_target_dir (const char* dir_name) { 
+int traverse_target_dir (const char* dir_name) { 
   struct dirent* dir_entry;
   int err_code = 0;
   char full_path[MAX_PATH_LEN] = {'\0'};
@@ -90,7 +92,7 @@ int list_target_dir (const char* dir_name) {
 
     if (S_ISDIR(s.st_mode)) {
       printf ("Found a directory: %s/%s\n", dir_name, dir_entry->d_name);
-      list_target_dir (create_path (full_path, dir_name, dir_entry->d_name));
+      traverse_target_dir (create_path (full_path, dir_name, dir_entry->d_name));
     } 
     else if (S_ISREG(s.st_mode)) {
       printf ("Found a regular file: %s/%s\n", dir_name, dir_entry->d_name);

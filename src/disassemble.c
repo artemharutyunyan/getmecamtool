@@ -15,7 +15,7 @@
 #include "common.h"
 
 #define DEFAULT_PATH "./"
-#define WEBUI_MAGIC 1141676733
+#define WEBUI_MAGIC 0x440C9ABD
 
 static void info() {
   printf("Try \'disassemble -h\' for more information\n"); //, PACKAGE);
@@ -23,8 +23,20 @@ static void info() {
 
 int calc_checksum(FILE* f)
 {
-  return 1;
+
+  fseek(f, 12, SEEK_SET);
+  int sum = 0;
+  unsigned char buf;
+  while(1){
+    fread(&buf, 1, 1, f);
+    if(feof(f))
+      break;
+    sum += buf;
+  }
+  fseek(f, 12, SEEK_SET); // get back to where we were
+  return sum;
 }
+
 int check_header(FILE *f)
 {
   int checksum = 0,
@@ -48,12 +60,6 @@ int check_header(FILE *f)
 
   fseek(f, 4, SEEK_SET);
   fread(&declared_checksum, 1, 4, f); // declared checksum
-  checksum = calc_checksum(f);
-  if(declared_checksum != checksum) {
-    printf("Declared checksum doesn't match the real checksum: %#x/%#x\n",
-        declared_checksum, checksum);
-    retval = 1;
-  }
 
   fseek(f, 8, SEEK_SET);
   fread(&declared_len, 1, 4, f); // declared file len
@@ -66,7 +72,30 @@ int check_header(FILE *f)
   fseek(f, 12, SEEK_SET);
   fread(&version, 1, 4, f); // WebUI firmware version
 
+  checksum = calc_checksum(f); // do it here since we are at offset 12 already
+  if(declared_checksum != checksum) {
+    printf("Declared checksum doesn't match the real checksum: %#x/%#x\n",
+        declared_checksum, checksum);
+    retval = 0;
+  }
+
   fseek(f, 16, SEEK_SET); // seek to the first file
+  if(retval) {
+    printf(
+        "intergrity check passed.\n"
+        "magic number:\t%#x\n"
+        "file length:\t%d bytes\n"
+        "version:    \t%d.%d.%d.%d\n"
+        "checksum:   \t%#x\n"
+        , declared_magic
+        , declared_len
+        , (version >> (0 * 8)) & 0xFF
+        , (version >> (1 * 8)) & 0xFF
+        , (version >> (2 * 8)) & 0xFF
+        , (version >> (3 * 8)) & 0xFF
+        , declared_checksum
+    );
+  }
 
   return retval;
 }
@@ -80,16 +109,22 @@ int extract_files(FILE *f, const char *dst_path)
         dst_file[MAX_FILE_NAME_LEN],
         *buf = NULL;
 
-  while(!feof(f)) {
+  while(1) {
     memset(file_name, 0, sizeof(file_name));
     memset(dst_file, 0, sizeof(dst_file));
 
     fread(&len, 1, 4, f); // read filename length
+    if(feof(f))
+      break;
     fread(file_name,1,len,f); // read filename
+    if(feof(f))
+      break;
     sprintf(dst_file, "%s%s", dst_path, file_name);
 
     type = 0;
     fread(&type, 1, 1, f); // read entry type
+    if(feof(f))
+      break;
     if (type == 0) { // type: dir
       if (mkdir(dst_file, 0770) != 0) {
         fprintf(stderr, "Unable to write file/dir: %s", dst_file);
@@ -103,6 +138,8 @@ int extract_files(FILE *f, const char *dst_path)
       }
 
       fread(&len, 1, 4, f); // read file length
+      if(feof(f))
+        break;
       if (len > max_buf) {
         buf = realloc(buf, len);
         max_buf = len;
@@ -112,6 +149,8 @@ int extract_files(FILE *f, const char *dst_path)
       }
       memset(buf, 0, sizeof(len));
       fread(buf,1,len,f);
+      if(feof(f))
+        break;
 
       fprintf(stdout, "Extracting %s (%d bytes)...\n", file_name, len);
       fwrite(buf, 1, len, file);
@@ -135,10 +174,10 @@ int main(int argc, char **argv) {
     switch (o) {
       case 'c':
         check = 1;
-        strncpy(in_file_name, optarg, 1023);
+        strncpy(in_file_name, optarg, 255);
         break;
       case 'd':
-        strncpy(in_file_name, optarg, 1023);
+        strncpy(in_file_name, optarg, 255);
         break;
       case 'h':
         info();

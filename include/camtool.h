@@ -9,6 +9,13 @@
 
 #include <stdint.h>
 
+
+// Constant definitions 
+#define MAX_PATH_LEN 1024
+#define MAX_FILE_NAME_LEN 1024 
+
+#define MAX_FILE_SIZE 1048576
+
 //! Web UI data blob 
 typedef struct webui_data_blob_t {
   size_t size;

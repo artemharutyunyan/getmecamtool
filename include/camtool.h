@@ -12,6 +12,7 @@
 //! Web UI data blob 
 typedef struct webui_data_blob_t {
   size_t size;
+  size_t alloc_size;
   char*  data;   
 } webui_data_blob;
 
@@ -27,19 +28,19 @@ typedef struct webui_file_header_t {
 
 
 //! Header for files that are packed into Web UI data blob
-typedef struct webui_entry_file_header_t {
+typedef struct webui_fentry_t {
   int32_t name_size;  /*!< Size of file name string */ 
   char*   name;       /*!< Name of the file */ 
-  char    entry_type; /*!< Type of the entry (set 01 in case of files) */
+  char    type;       /*!< Type of the entry (set 01 in case of files) */
   int32_t size;       /*!< Size of the file */
   char*   data;       /*!< File data */
-} webui_entry_file_header; 
+} webui_fentry; 
 
 //! Header for directories that are packed into Web UI data blob
-typedef struct webui_entry_dir_header_t {
+typedef struct webui_dentry_t {
   int32_t name_size;  /*!< Size of file name string */ 
   char*   name;       /*!< Name of the file */ 
-  char    entry_type; /*!< Type of the entry (set 00 in case of directories) */
-} webui_entry_dir_header; 
+  char    entry;      /*!< Type of the entry (set 00 in case of directories) */
+} webui_dentry; 
 
 #endif  // ___ASSEMBLE_H

@@ -18,7 +18,7 @@
 #define WEBUI_MAGIC 0x440C9ABD
 
 static void usage() {
-  printf(
+  fprintf(stdout,
       "Unpack/integrity check tool for WebUI firmware.\n"
       "Usage: disassemble [-cx] <input file> -o <output dir>\n"
       "-c <file>        perform integrity check of <file>\n"
@@ -54,7 +54,7 @@ int check_header(FILE *f, webui_file_header *file_header)
 
   fread(&file_header->magic, 1, 4, f); // magic number
   if(file_header->magic != WEBUI_MAGIC) {
-    printf("Declared file magic number doesn't match the known number: %d/%d\n",
+    fprintf(stderr, "Declared file magic number doesn't match the known number: %d/%d\n",
         file_header->magic, WEBUI_MAGIC);
     retval = 0;
   }
@@ -65,7 +65,7 @@ int check_header(FILE *f, webui_file_header *file_header)
   fseek(f, OFFSET_SIZE, SEEK_SET);
   fread(&file_header->size, 1, 4, f); // declared file size
   if(file_header->size != file_size) {
-    printf("Declared file size doesn't match the real file size: %d/%d\n",
+    fprintf(stderr, "Declared file size doesn't match the real file size: %d/%d\n",
         file_header->size, file_size);
     retval = 0;
   }
@@ -75,7 +75,7 @@ int check_header(FILE *f, webui_file_header *file_header)
 
   checksum = calc_checksum(f); // do it here since we are at offset 12 already
   if(file_header->checksum != checksum) {
-    printf("Declared checksum doesn't match the real checksum: %#x/%#x\n",
+    fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
         file_header->checksum, checksum);
     retval = 0;
   }
@@ -170,11 +170,11 @@ int main(int argc, char **argv) {
         strncpy(dst_path, optarg, 1023);
         break;
       case '?':
-        printf("Illegal option -%c\n", optopt);
+        fprintf(stderr, "Illegal option -%c\n", optopt);
         usage();
         return -1; 
       default:
-        printf("Option -%c requires an argument.\n", optopt);
+        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
         usage();
         return -1;
     }
@@ -186,13 +186,22 @@ int main(int argc, char **argv) {
 
   FILE *file = fopen(in_file_name, "rb");
   if(!file) {
-    printf("Error opening file %s: %s\n", in_file_name, strerror(errno));
+    fprintf(stderr, "Error opening file %s: %s\n", in_file_name, strerror(errno));
     return -1;
   }
   webui_file_header file_header = {0, 0, 0, 0};
   if(!check_header(file, &file_header)) {
     return -1;
   }
+  if (mkdir(dst_path, 0770) != 0) {
+    if(EEXIST != errno) {
+      fprintf(stderr, "Unable to create directory %s: %s\n", dst_path, strerror(errno));
+      exit(-1);
+    }
+  } else {
+    fprintf(stdout, "Created directory %s\n", dst_path);
+  }
+
   if(!check)
     extract_files(file, dst_path);
   fclose(file);

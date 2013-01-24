@@ -7,24 +7,29 @@
 #include <errno.h>
 #include <getopt.h>
 #include <stdio.h>
-#include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
-#include "disassemble.h"
+#include "camtool.h"
 #include "common.h"
 
 #define DEFAULT_PATH "./"
 #define WEBUI_MAGIC 0x440C9ABD
 
-static void info() {
-  printf("Try \'disassemble -h\' for more information\n"); //, PACKAGE);
+static void usage() {
+  fprintf(stdout,
+      "Unpack/integrity check tool for WebUI firmware.\n"
+      "Usage: disassemble [-cx] <input file> -o <output dir>\n"
+      "-c <file>        perform integrity check of <file>\n"
+      "-x <file>        extract <file>. Default destination is current working dir\n"
+      "-o <output dir>  output to <output dir>\n" 
+      );
 }
 
 int calc_checksum(FILE* f)
 {
-
-  fseek(f, 12, SEEK_SET);
+  fseek(f, OFFSET_VERSION, SEEK_SET);
   int sum = 0;
   unsigned char buf;
   while(1){
@@ -33,69 +38,74 @@ int calc_checksum(FILE* f)
       break;
     sum += buf;
   }
-  fseek(f, 12, SEEK_SET); // get back to where we were
   return sum;
 }
-
-int check_header(FILE *f)
+int read_header(FILE *f, const header_offset_t type, webui_file_header *file_header)
 {
-  int checksum = 0,
-      declared_checksum = 0,
-      declared_len = 0,
-      declared_magic = 0,
-      version = 0;
+  int retval = 1;
+  fseek(f, type, SEEK_SET);
+  switch(type) {
+    case OFFSET_MAGIC:
+      fread(&file_header->magic, 1, 4, f); // magic number
+      break;
+    case OFFSET_CHECKSUM:
+      fread(&file_header->checksum, 1, 4, f); // declared checksum
+      break;
+    case OFFSET_SIZE:
+      fread(&file_header->size, 1, 4, f); // declared file size
+      break;
+    case OFFSET_VERSION:
+      fread(&file_header->version, 1, 4, f); // WebUI firmware version
+      break;
+    case OFFSET_FIRST_FILE: // seek to the first file
+      break;
+    default:
+      retval = 0;
+      break;
+  }
+  if(feof(f) || ferror(f)){
+    fprintf(stderr, "Error reading file: %s\n", strerror(errno));
+    retval = 0;
+  }
+  return retval;
+}
+int check_header(FILE *f, webui_file_header *file_header)
+{
   int retval = 1;
 
   fseek(f, 0, SEEK_END); 
-  int file_len = ftell(f); // real file length
+  int32_t file_size = ftell(f); // real file size
 
-  rewind(f);
-
-  fread(&declared_magic, 1, 4, f); // magic number
-  if(declared_magic != WEBUI_MAGIC) {
-    printf("Declared file magic number doesn't match the known number: %d/%d\n",
-        declared_magic, WEBUI_MAGIC);
+  if(!read_header(f, OFFSET_MAGIC, file_header))
+    return 0;
+  if(file_header->magic != WEBUI_MAGIC) {
+    fprintf(stderr, "Declared file magic number doesn't match the known number: %d/%d\n",
+        file_header->magic, WEBUI_MAGIC);
     retval = 0;
   }
 
-  fseek(f, 4, SEEK_SET);
-  fread(&declared_checksum, 1, 4, f); // declared checksum
+  if(!read_header(f, OFFSET_CHECKSUM, file_header))
+    return 0;
+  int32_t checksum = calc_checksum(f); // do it here since we are at offset 12 already
+  if(file_header->checksum != checksum) {
+    fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
+        file_header->checksum, checksum);
+    retval = 0;
+  }
 
-  fseek(f, 8, SEEK_SET);
-  fread(&declared_len, 1, 4, f); // declared file len
-  if(declared_len != file_len) {
-    printf("Declared file size doesn't match the real file size: %d/%d\n",
-        declared_len, file_len);
+  if(!read_header(f, OFFSET_SIZE, file_header))
+    return 0;
+  if(file_header->size != file_size) {
+    fprintf(stderr, "Declared file size doesn't match the real file size: %d/%d\n",
+        file_header->size, file_size);
     retval = 0;
   }
   
-  fseek(f, 12, SEEK_SET);
-  fread(&version, 1, 4, f); // WebUI firmware version
+  if(!read_header(f, OFFSET_VERSION, file_header))
+    return 0;
 
-  checksum = calc_checksum(f); // do it here since we are at offset 12 already
-  if(declared_checksum != checksum) {
-    printf("Declared checksum doesn't match the real checksum: %#x/%#x\n",
-        declared_checksum, checksum);
-    retval = 0;
-  }
-
-  fseek(f, 16, SEEK_SET); // seek to the first file
-  if(retval) {
-    printf(
-        "intergrity check passed.\n"
-        "magic number:\t%#x\n"
-        "file length:\t%d bytes\n"
-        "version:    \t%d.%d.%d.%d\n"
-        "checksum:   \t%#x\n"
-        , declared_magic
-        , declared_len
-        , (version >> (0 * 8)) & 0xFF
-        , (version >> (1 * 8)) & 0xFF
-        , (version >> (2 * 8)) & 0xFF
-        , (version >> (3 * 8)) & 0xFF
-        , declared_checksum
-    );
-  }
+  if(!read_header(f, OFFSET_FIRST_FILE, file_header))
+    return 0;
 
   return retval;
 }
@@ -126,14 +136,14 @@ int extract_files(FILE *f, const char *dst_path)
     if(feof(f))
       break;
     if (type == 0) { // type: dir
-      if (mkdir(dst_file, 0770) != 0) {
-        fprintf(stderr, "Unable to write file/dir: %s", dst_file);
+      if (mkdir(dst_file, 0770) != 0 && EEXIST != errno) {
+        fprintf(stderr, "Unable to create directory %s: %s\n", dst_file, strerror(errno));
         exit(-1);
       }
     } else if (type == 1) { // type: file
       FILE *file = fopen(dst_file, "wb");
       if (file == NULL) {
-        fprintf(stderr, "Unable to write file: %s", dst_file);
+        fprintf(stderr, "Unable to write file %s: %s\n", dst_file, strerror(errno));
         exit(-1);
       }
 
@@ -163,35 +173,35 @@ int extract_files(FILE *f, const char *dst_path)
 int main(int argc, char **argv) {
 
   if (argc < 2) {
-    info();
+    usage();
     return -1; 
   }
   char o;
   int check = 0;
   char in_file_name[MAX_FILE_NAME_LEN] = { 0 };
   char dst_path[MAX_FILE_NAME_LEN] = { 0 };
-  while((o = getopt(argc, argv, ":c:d:ho:")) != -1) {
+  while((o = getopt(argc, argv, ":c:x:ho:")) != -1) {
     switch (o) {
       case 'c':
         check = 1;
         strncpy(in_file_name, optarg, 255);
         break;
-      case 'd':
+      case 'x':
         strncpy(in_file_name, optarg, 255);
         break;
       case 'h':
-        info();
+        usage();
         break;
       case 'o':
         strncpy(dst_path, optarg, 1023);
         break;
       case '?':
-        printf("Illegal option -%c\n", optopt);
-        info();
+        fprintf(stderr, "Illegal option -%c\n", optopt);
+        usage();
         return -1; 
       default:
-        printf("Option -%c requires an argument.\n", optopt);
-        info();
+        fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+        usage();
         return -1;
     }
   }
@@ -202,15 +212,39 @@ int main(int argc, char **argv) {
 
   FILE *file = fopen(in_file_name, "rb");
   if(!file) {
-    printf("Error opening file %s: %s\n", in_file_name, strerror(errno));
+    fprintf(stderr, "Error opening file %s: %s\n", in_file_name, strerror(errno));
     return -1;
   }
-  if(!check_header(file)) {
+  webui_file_header file_header = {0, 0, 0, 0};
+  if(!check_header(file, &file_header)) {
     return -1;
   }
+  if (mkdir(dst_path, 0770) != 0) {
+    if(EEXIST != errno) {
+      fprintf(stderr, "Unable to create directory %s: %s\n", dst_path, strerror(errno));
+      exit(-1);
+    }
+  } else {
+    fprintf(stdout, "Created directory %s\n", dst_path);
+  }
+
   if(!check)
     extract_files(file, dst_path);
-  fclose(file); 
+  fclose(file);
 
+  printf(
+      "\nIntegrity check passed:\n"
+      "Magic number\t%#x\n"
+      "File length\t%d bytes\n"
+      "Version    \t%d.%d.%d.%d\n"
+      "Checksum   \t%#x\n"
+      , file_header.magic
+      , file_header.size
+      , (file_header.version >> (0 * 8)) & 0xFF
+      , (file_header.version >> (1 * 8)) & 0xFF
+      , (file_header.version >> (2 * 8)) & 0xFF
+      , (file_header.version >> (3 * 8)) & 0xFF
+      , file_header.checksum
+      );
 }
 

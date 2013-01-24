@@ -38,49 +38,75 @@ int calc_checksum(FILE* f)
       break;
     sum += buf;
   }
-  fseek(f, OFFSET_VERSION, SEEK_SET); // get back to where we were
   return sum;
 }
-
+int read_header(FILE *f, const header_offset_t type, webui_file_header *file_header)
+{
+  int retval = 1;
+  fseek(f, type, SEEK_SET);
+  switch(type) {
+    case OFFSET_MAGIC:
+      fread(&file_header->magic, 1, 4, f); // magic number
+      break;
+    case OFFSET_CHECKSUM:
+      fread(&file_header->checksum, 1, 4, f); // declared checksum
+      break;
+    case OFFSET_SIZE:
+      fread(&file_header->size, 1, 4, f); // declared file size
+      break;
+    case OFFSET_VERSION:
+      fread(&file_header->version, 1, 4, f); // WebUI firmware version
+      break;
+    case OFFSET_FIRST_FILE: // seek to the first file
+      break;
+    default:
+      retval = 0;
+      break;
+  }
+  if(feof(f) || ferror(f)){
+    fprintf(stderr, "Error reading file: %s\n", strerror(errno));
+    retval = 0;
+  }
+  return retval;
+}
 int check_header(FILE *f, webui_file_header *file_header)
 {
-  int32_t checksum = 0;
   int retval = 1;
 
   fseek(f, 0, SEEK_END); 
   int32_t file_size = ftell(f); // real file size
 
-  fseek(f, OFFSET_MAGIC, SEEK_SET); // rewind
-
-  fread(&file_header->magic, 1, 4, f); // magic number
+  if(!read_header(f, OFFSET_MAGIC, file_header))
+    return 0;
   if(file_header->magic != WEBUI_MAGIC) {
     fprintf(stderr, "Declared file magic number doesn't match the known number: %d/%d\n",
         file_header->magic, WEBUI_MAGIC);
     retval = 0;
   }
 
-  fseek(f, OFFSET_CHECKSUM, SEEK_SET);
-  fread(&file_header->checksum, 1, 4, f); // declared checksum
-
-  fseek(f, OFFSET_SIZE, SEEK_SET);
-  fread(&file_header->size, 1, 4, f); // declared file size
-  if(file_header->size != file_size) {
-    fprintf(stderr, "Declared file size doesn't match the real file size: %d/%d\n",
-        file_header->size, file_size);
-    retval = 0;
-  }
-  
-  fseek(f, OFFSET_VERSION, SEEK_SET);
-  fread(&file_header->version, 1, 4, f); // WebUI firmware version
-
-  checksum = calc_checksum(f); // do it here since we are at offset 12 already
+  if(!read_header(f, OFFSET_CHECKSUM, file_header))
+    return 0;
+  int32_t checksum = calc_checksum(f); // do it here since we are at offset 12 already
   if(file_header->checksum != checksum) {
     fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
         file_header->checksum, checksum);
     retval = 0;
   }
 
-  fseek(f, OFFSET_FIRST_FILE, SEEK_SET); // seek to the first file
+  if(!read_header(f, OFFSET_SIZE, file_header))
+    return 0;
+  if(file_header->size != file_size) {
+    fprintf(stderr, "Declared file size doesn't match the real file size: %d/%d\n",
+        file_header->size, file_size);
+    retval = 0;
+  }
+  
+  if(!read_header(f, OFFSET_VERSION, file_header))
+    return 0;
+
+  if(!read_header(f, OFFSET_FIRST_FILE, file_header))
+    return 0;
+
   return retval;
 }
 
@@ -207,11 +233,11 @@ int main(int argc, char **argv) {
   fclose(file);
 
   printf(
-      "Untegrity check passed:\n"
-      "magic number\t%#x\n"
-      "file length\t%d bytes\n"
-      "version    \t%d.%d.%d.%d\n"
-      "checksum   \t%#x\n"
+      "\nIntegrity check passed:\n"
+      "Magic number\t%#x\n"
+      "File length\t%d bytes\n"
+      "Version    \t%d.%d.%d.%d\n"
+      "Checksum   \t%#x\n"
       , file_header.magic
       , file_header.size
       , (file_header.version >> (0 * 8)) & 0xFF

@@ -1,4 +1,11 @@
-# IP Cam hack 
+# TODO
+# HEADER 
+
+# Camtool CMake file 
+
+# Minimum CMake version 
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
 
 # Project info 
 SET(PROJECT_NAME_SHORT "IP Cam Hack")

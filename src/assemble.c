@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "assemble.h"
 #include "camtool.h"
 
 #include "common.h"
@@ -20,8 +19,18 @@
 
 #define WEBUI_DATABLOB_INITIAL_SIZE (1024 * 1024) // 1 MB
 
+int webui_data_blob_init  (webui_data_blob* blob);
+int webui_data_blob_clean (webui_data_blob* blob);
+int get_file_content (const char* path, const size_t size, char* content);
+int traverse_target_dir (const char* dir_name, webui_data_blob* blob);
+
+
 int main() {
-  traverse_target_dir (TODO_HARDCODED_DIR_NAME);
+  webui_data_blob* blob;
+  webui_data_blob_init(blob);
+  traverse_target_dir (TODO_HARDCODED_DIR_NAME, blob);
+  size_t n = fwrite(blob->data, 1, blob->size, stdout);
+  webui_data_blob_clean(blob);
   return 0;
 }
 
@@ -55,7 +64,7 @@ char* create_path (char* path, const char*dirname, const char* fname) {
   return path; 
 }
 
-int traverse_target_dir (const char* dir_name) { 
+int traverse_target_dir (const char* dir_name, webui_data_blob* blob) { 
   struct dirent* dir_entry;
   int err_code = 0;
   char full_path[MAX_PATH_LEN] = {'\0'};
@@ -85,7 +94,7 @@ int traverse_target_dir (const char* dir_name) {
     append_file_name (full_path, dir_name);
     append_file_name (full_path, dir_entry->d_name);
     
-    if (stat  (full_path, &s)) {
+    if (stat (full_path, &s)) {
       // TODO: verbose error message 
       // Proper error handling 
       printf ("Error doing fstatat on %s\n", full_path);
@@ -97,7 +106,26 @@ int traverse_target_dir (const char* dir_name) {
       continue;
     } 
     else if (S_ISREG(s.st_mode)) {
-      printf ("Found a regular file: %s/%s\n", dir_name, dir_entry->d_name);
+      //printf ("Found a regular file: %s/%s\n", dir_name, dir_entry->d_name);
+      
+      // Generate a full path for the file 
+      create_path (full_path, dir_name, dir_entry->d_name);
+
+      // Createa and initialize webui_fentry structure 
+      webui_fentry f;
+      // remove leading .
+      f.name_size = strlen (full_path);
+      f.name = full_path;
+      f.type = 0; //TODO switch to enum; 
+      f.size = s.st_size; 
+      // Read contents of the file 
+      char buf[MAX_FILE_SIZE];
+      get_file_content (f.name, f.size, buf);
+      f.data = buf;
+
+      // Appenf the entry to the blob
+      webui_append_fentry (&f, blob);    
+ 
     }  
   }
 
@@ -126,16 +154,44 @@ int traverse_target_dir (const char* dir_name) {
     }
 
     if (S_ISDIR(s.st_mode)) {
-      printf ("Found a directory: %s/%s\n", dir_name, dir_entry->d_name);
-      traverse_target_dir (create_path (full_path, dir_name, dir_entry->d_name));
+      //printf ("Found a directory: %s/%s\n", dir_name, dir_entry->d_name);
+      create_path (full_path, dir_name, dir_entry->d_name);
+      webui_dentry d;
+      d.name_size = strlen (full_path);
+      d.name = full_path;
+      d.type = 1; //TODO switch to enum;
+
+      webui_append_dentry (&d, blob);    
+       
+      traverse_target_dir (full_path, blob);
     } 
   }
   return 0;
 } 
 
+/// \brief dumps the file into memory
+int get_file_content (const char* path, const size_t size, char *o) {
+  FILE* fd = fopen (path, "r");
+  
+  if (fd == NULL) {
+    // TODO: verbose error message 
+    perror ("fopen failed");
+    exit  (-1);
+  }
+
+  if (fread (o, 1, size, fd) != size) {
+    // TODO: verbose error message
+    perror ("fread failed");
+    exit (-1);
+  }
+ 
+  fclose (fd);
+}
+
 /// \brief Initialize Web UI blob data structure 
 int webui_data_blob_init (webui_data_blob* blob) {
-  blob->data = malloc (WEBUI_DATABLOB_INITIAL_SIZE);
+
+  blob->data = malloc (WEBUI_DATABLOB_INITIAL_SIZE * 2);
 
   if (blob->data == NULL) {
     // TODO Verbose error message 
@@ -143,7 +199,7 @@ int webui_data_blob_init (webui_data_blob* blob) {
     exit(-1);
   }
 
-  blob->alloc_size = WEBUI_DATABLOB_INITIAL_SIZE;
+  blob->alloc_size = WEBUI_DATABLOB_INITIAL_SIZE * 2;
   blob->size = 0;
 
   return 0;
@@ -164,7 +220,7 @@ int get_fentry_size (const webui_fentry* fentry) {
           fentry->size);
 }
 
-int webui_append_fentry (const webui_fentry* fentry, webui_data_blob *blob) {
+int webui_append_fentry (const webui_fentry* fentry, webui_data_blob* blob) {
   
   // Make sure there is enough memory allocaed 
   if (blob->alloc_size < (blob->size + get_fentry_size(fentry)) ) {
@@ -177,12 +233,14 @@ int webui_append_fentry (const webui_fentry* fentry, webui_data_blob *blob) {
   size_t offset = blob->size; 
   
   // Size of the name field
-  memmove ( &blob->data[offset], &fentry->name_size, WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
+  size_t name_size_int = fentry->name_size - 1; // remove leading .
+  memmove ( &blob->data[offset], &name_size_int, WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
   offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
 
-  // Name field 
-  memmove (&blob->data[offset], fentry->name, fentry->name_size);
-  offset += fentry->name_size;
+  // Name field
+  // remove leading .  
+  memmove (&blob->data[offset], &fentry->name[1], name_size_int);
+  offset += name_size_int;
 
   // Type field 
   memmove (&blob->data[offset], &fentry->type, WEBUI_ENTRY_TYPE_FIELD_LEN);
@@ -201,7 +259,40 @@ int webui_append_fentry (const webui_fentry* fentry, webui_data_blob *blob) {
   return 0;
 } 
 
-int webui_append_dentry (const webui_dentry* dentry, FILE* fd) {
+/// \brief Calculates the size of the fentry 
+int get_dentry_size (const webui_dentry* dentry) {
+  return  (WEBUI_ENTRY_NAME_SIZE_FIELD_LEN + 
+          dentry->name_size + 
+          WEBUI_ENTRY_TYPE_FIELD_LEN);
+}
 
+int webui_append_dentry (const webui_dentry* dentry, webui_data_blob* blob) {
+ 
+   // Make sure there is enough memory allocaed 
+  if (blob->alloc_size < (blob->size + get_dentry_size(dentry)) ) {
+    //TODO Realloc
+    perror("Realloc");
+    exit (-1);
+  }  
+
+  // Copy file entry fields into the blob 
+  size_t offset = blob->size; 
+  
+  // Size of the name field
+  memmove ( &blob->data[offset], &dentry->name_size, WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
+  offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
+
+  // Name field 
+  // remove leading .
+  memmove (&blob->data[offset], &dentry->name[1], dentry->name_size - 1);
+  offset += (dentry->name_size - 1);
+
+  // Type field 
+  memmove (&blob->data[offset], &dentry->type, WEBUI_ENTRY_TYPE_FIELD_LEN);
+  offset += WEBUI_ENTRY_TYPE_FIELD_LEN;
+  
+  blob->size = offset;
+  
   return 0;
 }
+

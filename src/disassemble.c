@@ -27,7 +27,7 @@ static void usage() {
       );
 }
 
-int calc_checksum(FILE* f)
+/*int calc_checksum(FILE* f)
 {
   fseek(f, OFFSET_VERSION, SEEK_SET);
   int sum = 0;
@@ -39,7 +39,8 @@ int calc_checksum(FILE* f)
     sum += buf;
   }
   return sum;
-}
+}*/
+
 int read_header(FILE *f, const header_offset_t type, webui_file_header *file_header)
 {
   int retval = 1;
@@ -86,7 +87,11 @@ int check_header(FILE *f, webui_file_header *file_header)
 
   if(!read_header(f, OFFSET_CHECKSUM, file_header))
     return 0;
+<<<<<<< HEAD
   int32_t checksum = calc_checksum(f);
+=======
+  int32_t checksum = calc_checksum_file(f); // do it here since we are at offset 12 already
+>>>>>>> b8733227a729ca57df4ec08c74a033c5949b5bc6
   if(file_header->checksum != checksum) {
     fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
         file_header->checksum, checksum);

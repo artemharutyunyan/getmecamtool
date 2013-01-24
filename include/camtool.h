@@ -40,7 +40,7 @@ typedef struct webui_fentry_t {
 typedef struct webui_dentry_t {
   int32_t name_size;  /*!< Size of file name string */ 
   char*   name;       /*!< Name of the file */ 
-  char    entry;      /*!< Type of the entry (set 00 in case of directories) */
+  char    type;      /*!< Type of the entry (set 00 in case of directories) */
 } webui_dentry; 
 
 #endif  // ___ASSEMBLE_H

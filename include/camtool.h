@@ -50,4 +50,13 @@ typedef struct webui_dentry_t {
   char    entry;      /*!< Type of the entry (set 00 in case of directories) */
 } webui_dentry; 
 
+//! Header for files and directories hat are packed into Web UI data blob
+typedef struct webui_entry_t {
+  int32_t name_size;                /*!< Size of file name string */ 
+  char    name[MAX_FILE_NAME_LEN];  /*!< Name of the file/directory */ 
+  char    type;                     /*!< Type of the entry (set 01 in case of files) */
+  int32_t size;                     /*!< Size of the file */
+  char    data[MAX_FILE_SIZE];      /*!< File data */
+} webui_entry; 
+
 #endif  // ___ASSEMBLE_H

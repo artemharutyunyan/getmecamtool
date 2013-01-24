@@ -86,7 +86,7 @@ int check_header(FILE *f, webui_file_header *file_header)
 
   if(!read_header(f, OFFSET_CHECKSUM, file_header))
     return 0;
-  int32_t checksum = calc_checksum(f); // do it here since we are at offset 12 already
+  int32_t checksum = calc_checksum(f);
   if(file_header->checksum != checksum) {
     fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
         file_header->checksum, checksum);
@@ -112,12 +112,14 @@ int check_header(FILE *f, webui_file_header *file_header)
 
 int extract_files(FILE *f, const char *dst_path)
 {
+  webui_entry wui_entry = {0, 0, 0, 0, 0};
   int   len = 0,
-        max_buf = 0,
+        //max_buf = 0,
         type = 0;
   char  file_name[MAX_FILE_NAME_LEN],
         dst_file[MAX_FILE_NAME_LEN],
-        *buf = NULL;
+        // *buf = NULL;
+        buf[MAX_FILE_SIZE];
 
   while(1) {
     memset(file_name, 0, sizeof(file_name));
@@ -150,7 +152,7 @@ int extract_files(FILE *f, const char *dst_path)
       fread(&len, 1, 4, f); // read file length
       if(feof(f))
         break;
-      if (len > max_buf) {
+      /*if (len > max_buf) {
         buf = realloc(buf, len);
         max_buf = len;
         if (buf == NULL) {
@@ -158,6 +160,7 @@ int extract_files(FILE *f, const char *dst_path)
         }
       }
       memset(buf, 0, sizeof(len));
+      */
       fread(buf,1,len,f);
       if(feof(f))
         break;
@@ -167,7 +170,7 @@ int extract_files(FILE *f, const char *dst_path)
       fclose(file);
     }
   }
-  free(buf);
+  //free(buf);
   return 1;
 }
 int main(int argc, char **argv) {

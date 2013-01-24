@@ -113,43 +113,39 @@ int check_header(FILE *f, webui_file_header *file_header)
 int extract_files(FILE *f, const char *dst_path)
 {
   webui_entry wui_entry = {0, 0, 0, 0, 0};
-  int   len = 0,
         //max_buf = 0,
-        type = 0;
-  char  file_name[MAX_FILE_NAME_LEN],
-        dst_file[MAX_FILE_NAME_LEN],
+  char  dst_file[MAX_FILE_NAME_LEN];
         // *buf = NULL;
-        buf[MAX_FILE_SIZE];
 
   while(1) {
-    memset(file_name, 0, sizeof(file_name));
+    memset(wui_entry.name, 0, sizeof(wui_entry.name));
     memset(dst_file, 0, sizeof(dst_file));
 
-    fread(&len, 1, 4, f); // read filename length
+    fread(&wui_entry.size, 1, 4, f); // read filename length
     if(feof(f))
       break;
-    fread(file_name,1,len,f); // read filename
+    fread(&wui_entry.name,1,wui_entry.size,f); // read filename
     if(feof(f))
       break;
-    sprintf(dst_file, "%s%s", dst_path, file_name);
+    sprintf(dst_file, "%s%s", dst_path, wui_entry.name);
 
-    type = 0;
-    fread(&type, 1, 1, f); // read entry type
+    wui_entry.type = 0;
+    fread(&wui_entry.type, 1, 1, f); // read entry type
     if(feof(f))
       break;
-    if (type == 0) { // type: dir
+    if (wui_entry.type == 0) { // type: dir
       if (mkdir(dst_file, 0770) != 0 && EEXIST != errno) {
         fprintf(stderr, "Unable to create directory %s: %s\n", dst_file, strerror(errno));
         exit(-1);
       }
-    } else if (type == 1) { // type: file
+    } else if (wui_entry.type == 1) { // type: file
       FILE *file = fopen(dst_file, "wb");
       if (file == NULL) {
         fprintf(stderr, "Unable to write file %s: %s\n", dst_file, strerror(errno));
         exit(-1);
       }
 
-      fread(&len, 1, 4, f); // read file length
+      fread(&wui_entry.size, 1, 4, f); // read file length
       if(feof(f))
         break;
       /*if (len > max_buf) {
@@ -161,12 +157,12 @@ int extract_files(FILE *f, const char *dst_path)
       }
       memset(buf, 0, sizeof(len));
       */
-      fread(buf,1,len,f);
+      fread(&wui_entry.data,1,wui_entry.size,f);
       if(feof(f))
         break;
 
-      fprintf(stdout, "Extracting %s (%d bytes)...\n", file_name, len);
-      fwrite(buf, 1, len, file);
+      fprintf(stdout, "Extracting %s (%d bytes)...\n", wui_entry.name, wui_entry.size);
+      fwrite(wui_entry.data, 1, wui_entry.size, file);
       fclose(file);
     }
   }

@@ -59,4 +59,9 @@ typedef struct webui_entry_t {
   char    data[MAX_FILE_SIZE];      /*!< File data */
 } webui_entry; 
 
-#endif  // ___ASSEMBLE_H
+// Function declarations
+int32_t calc_checksum_file(FILE*);
+int32_t calc_checksum_blob(const webui_data_blob*); 
+
+
+#endif  // __CAMTOOL_H_

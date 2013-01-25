@@ -21,6 +21,11 @@
 
 int webui_data_blob_init  (webui_data_blob* blob);
 int webui_data_blob_clean (webui_data_blob* blob);
+
+
+int webui_append_fentry (const webui_fentry* fentry, webui_data_blob* blob);
+int webui_append_dentry (const webui_dentry* fentry, webui_data_blob* blob);
+
 int get_file_content (const char* path, const size_t size, char* content);
 int traverse_target_dir (const char* dir_name, webui_data_blob* blob);
 
@@ -186,6 +191,7 @@ int get_file_content (const char* path, const size_t size, char *o) {
   }
  
   fclose (fd);
+  return 0;
 }
 
 /// \brief Initialize Web UI blob data structure 
@@ -220,8 +226,8 @@ int get_fentry_size (const webui_fentry* fentry) {
           fentry->size);
 }
 
-int webui_append_fentry (const webui_fentry* fentry, webui_data_blob* blob) {
   
+int webui_append_fentry (const webui_fentry* fentry, webui_data_blob* blob) {
   // Make sure there is enough memory allocaed 
   if (blob->alloc_size < (blob->size + get_fentry_size(fentry)) ) {
     //TODO Realloc

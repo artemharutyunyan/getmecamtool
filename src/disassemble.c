@@ -27,20 +27,6 @@ static void usage() {
       );
 }
 
-/*int calc_checksum(FILE* f)
-{
-  fseek(f, OFFSET_VERSION, SEEK_SET);
-  int sum = 0;
-  unsigned char buf;
-  while(1){
-    fread(&buf, 1, 1, f);
-    if(feof(f))
-      break;
-    sum += buf;
-  }
-  return sum;
-}*/
-
 int read_header(FILE *f, const header_offset_t type, webui_file_header *file_header)
 {
   int retval = 1;
@@ -64,7 +50,9 @@ int read_header(FILE *f, const header_offset_t type, webui_file_header *file_hea
       retval = 0;
       break;
   }
-  if(feof(f) || ferror(f)){
+  if(feof(f)) {
+    retval = 0;
+  } else if(ferror(f)){
     fprintf(stderr, "Error reading file: %s\n", strerror(errno));
     retval = 0;
   }
@@ -87,7 +75,7 @@ int check_header(FILE *f, webui_file_header *file_header)
 
   if(!read_header(f, OFFSET_CHECKSUM, file_header))
     return 0;
-  int32_t checksum = calc_checksum_file(f); // do it here since we are at offset 12 already
+  int32_t checksum = calc_checksum_file(f);
   if(file_header->checksum != checksum) {
     fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
         file_header->checksum, checksum);
@@ -110,7 +98,35 @@ int check_header(FILE *f, webui_file_header *file_header)
 
   return retval;
 }
-
+int read_entry(FILE *f, const entry_data_type_t type, webui_entry *entry)
+{
+  int retval = 1;
+  switch(type) {
+    case TYPE_FILENAME_SIZE:
+    case TYPE_FILE_SIZE:
+      fread(&entry->size, 1, 0x4, f); // read filename length
+      break;
+    case TYPE_FILENAME:
+      fread(&entry->name,1,entry->size,f); // read filename
+      break;
+    case TYPE_ENTRY_TYPE:
+      fread(&entry->type, 1, 0x1, f); // read entry type
+      break;
+    case TYPE_FILE:
+      fread(&entry->data,1,entry->size,f);
+      break;
+    default:
+      retval = 0;
+      break;
+  }
+  if(feof(f)) {
+    retval = 0;
+  } else if (ferror(f)) {
+    fprintf(stderr, "Error reading file entry: %s\n", strerror(errno));
+    retval = 0;
+  }
+  return retval;
+}
 int extract_files(FILE *f, const char *dst_path)
 {
   webui_entry wui_entry = {0, 0, 0, 0, 0};
@@ -122,18 +138,16 @@ int extract_files(FILE *f, const char *dst_path)
     memset(wui_entry.name, 0, sizeof(wui_entry.name));
     memset(dst_file, 0, sizeof(dst_file));
 
-    fread(&wui_entry.size, 1, 4, f); // read filename length
-    if(feof(f))
-      break;
-    fread(&wui_entry.name,1,wui_entry.size,f); // read filename
-    if(feof(f))
-      break;
+    if(!read_entry(f, TYPE_FILENAME_SIZE, &wui_entry))
+      return 0;
+    
+    if(!read_entry(f, TYPE_FILENAME, &wui_entry))
+      return 0;
     sprintf(dst_file, "%s%s", dst_path, wui_entry.name);
 
     wui_entry.type = 0;
-    fread(&wui_entry.type, 1, 1, f); // read entry type
-    if(feof(f))
-      break;
+    if(!read_entry(f, TYPE_ENTRY_TYPE, &wui_entry))
+      return 0;
     if (wui_entry.type == 0) { // type: dir
       if (mkdir(dst_file, 0770) != 0 && EEXIST != errno) {
         fprintf(stderr, "Unable to create directory %s: %s\n", dst_file, strerror(errno));
@@ -146,9 +160,8 @@ int extract_files(FILE *f, const char *dst_path)
         exit(-1);
       }
 
-      fread(&wui_entry.size, 1, 4, f); // read file length
-      if(feof(f))
-        break;
+      if(!read_entry(f, TYPE_FILE_SIZE, &wui_entry))
+        return 0;
       /*if (len > max_buf) {
         buf = realloc(buf, len);
         max_buf = len;
@@ -158,9 +171,9 @@ int extract_files(FILE *f, const char *dst_path)
       }
       memset(buf, 0, sizeof(len));
       */
-      fread(&wui_entry.data,1,wui_entry.size,f);
-      if(feof(f))
-        break;
+
+      if(!read_entry(f, TYPE_FILE, &wui_entry))
+        return 0;
 
       fprintf(stdout, "Extracting %s (%d bytes)...\n", wui_entry.name, wui_entry.size);
       fwrite(wui_entry.data, 1, wui_entry.size, file);

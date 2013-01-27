@@ -18,6 +18,14 @@ typedef enum {
   OFFSET_FIRST_FILE  = 0x10
 } header_offset_t; 
 
+typedef enum {
+  TYPE_FILENAME_SIZE = 0,
+  TYPE_FILENAME,
+  TYPE_ENTRY_TYPE,
+  TYPE_FILE_SIZE,
+  TYPE_FILE
+} entry_data_type_t; 
+
 // Function definitions 
 
 #endif  // __COMMON_H

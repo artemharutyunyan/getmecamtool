@@ -10,7 +10,12 @@ SET(CAMTOOL_LIBS common)
 ADD_EXECUTABLE ( assemble assemble.c ) 
 TARGET_LINK_LIBRARIES (assemble ${CAMTOOL_LIBS})
 
-# Disassemble utility compilation
-ADD_EXECUTABLE ( disassemble disassemble.c ) 
-TARGET_LINK_LIBRARIES (disassemble ${CAMTOOL_LIBS})
+# WebUI extracting utility compilation
+ADD_EXECUTABLE ( uiextract uiextract.c ) 
+TARGET_LINK_LIBRARIES (uiextract ${CAMTOOL_LIBS})
+
+# System image extracting utility compilation
+ADD_EXECUTABLE ( sysextract sysextract.c ) 
+TARGET_LINK_LIBRARIES (sysextract ${CAMTOOL_LIBS})
+
 

@@ -18,7 +18,7 @@ usage()
 {
 	fprintf(stdout,
 		"Unpack/integrity check tool for WebUI firmware.\n"
-		"Usage: disassemble [-cx] <input file> -o <output dir>\n"
+		"Usage: uiextract [-cx] <input file> -o <output dir>\n"
 		"-c <file>        perform integrity check of <file>\n"
 		"-x <file>        extract <file>. Default destination is current working dir\n"
 		"-o <output dir>  output to <output dir>\n"

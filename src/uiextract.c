@@ -13,6 +13,8 @@
 #include "camtool.h"
 #include "common.h"
 
+extern const int32_t ui_header_field[];
+
 static void 
 usage()
 {
@@ -29,27 +31,33 @@ int
 read_header(FILE * f, const header_offset_t type, webui_file_header * file_header)
 {
 	int		retval = 1;
-	fseek(f, type, SEEK_SET);
+	fseek(f, ui_header_field[type], SEEK_SET);
 	switch (type) {
 	case OFFSET_MAGIC:
-		fread(&file_header->magic, 1, 4, f);
-		//magic number
-			break;
-	case OFFSET_CHECKSUM:
-		fread(&file_header->checksum, 1, 4, f);
-		//declared checksum
-			break;
-	case OFFSET_SIZE:
-		fread(&file_header->size, 1, 4, f);
-		//declared file size
-			break;
-	case OFFSET_VERSION:
-		fread(&file_header->version, 1, 4, f);
-		//WebUI firmware version
-			break;
-	case OFFSET_FIRST_FILE:
-		//seek to the first file
-			break;
+    fread(&file_header->magic, 1, 4, f);
+    //magic number
+    break;
+  case OFFSET_CHECKSUM:
+    fread(&file_header->checksum, 1, 4, f);
+    //declared checksum
+    break;
+  case OFFSET_SIZE_v1:
+  case OFFSET_SIZE_v2:
+    fread(&file_header->size, 1, 4, f);
+    //declared file size
+    break;
+  case OFFSET_VERSION_v1:
+  case OFFSET_VERSION_v2:
+    fread(&file_header->version, 1, 4, f);
+    //WebUI firmware version
+    break;
+  case OFFSET_DESC:
+    fread(&file_header->desc, 1, 21, f);
+    break;
+  case OFFSET_FIRST_FILE_v1:
+  case OFFSET_FIRST_FILE_v2:
+    //seek to the first file
+    break;
 	default:
 		retval = 0;
 		break;
@@ -62,44 +70,65 @@ read_header(FILE * f, const header_offset_t type, webui_file_header * file_heade
 	}
 	return retval;
 }
+int32_t check_version(FILE * f, webui_file_header * file_header)
+{
+  fseek(f, 0, SEEK_END);
+  int32_t file_size = ftell(f); //real file size
+  int32_t declared_file_size = 0;
+  fread(&declared_file_size, 1, 4, f);
+  if(file_size == declared_file_size)
+    file_header->format_version = 1;
+  else
+    file_header->format_version = 2;
+  return file_size;
+}
 int 
 valid_header(FILE * f, webui_file_header * file_header)
 {
 	int		retval = 1;
+	int32_t		file_size  = check_version(f, file_header);
+  if(1 == file_header->format_version){
+    if (!read_header(f, OFFSET_SIZE_v1, file_header))
+      return 0;
+    if (!read_header(f, OFFSET_VERSION_v2, file_header))
+      return 0;
+    if (!read_header(f, OFFSET_FIRST_FILE_v2, file_header))
+      return 0;
+  } else if(2 == file_header->format_version) {
+    if (!read_header(f, OFFSET_MAGIC, file_header))
+      return 0;
+    if (file_header->magic != WEBUI_MAGIC) {
+      fprintf(stderr, "Declared file magic number doesn't match the known number: %d/%d\n",
+          file_header->magic, WEBUI_MAGIC);
+      retval = 0;
+    }
+    if (!read_header(f, OFFSET_CHECKSUM, file_header))
+      return 0;
+    int32_t		checksum = calc_checksum_file(f);
+    if (file_header->checksum != checksum) {
+      fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
+          file_header->checksum, checksum);
+      retval = 0;
+    }
+    if (!read_header(f, OFFSET_SIZE_v2, file_header))
+      return 0;
 
-	fseek(f, 0, SEEK_END);
-	int32_t		file_size = ftell(f);
-	//real file size
+    if (!read_header(f, OFFSET_VERSION_v2, file_header))
+      return 0;
 
-		if (!read_header(f, OFFSET_MAGIC, file_header))
-		return 0;
-	if (file_header->magic != WEBUI_MAGIC) {
-		fprintf(stderr, "Declared file magic number doesn't match the known number: %d/%d\n",
-			file_header->magic, WEBUI_MAGIC);
-		retval = 0;
-	}
-	if (!read_header(f, OFFSET_CHECKSUM, file_header))
-		return 0;
-	int32_t		checksum = calc_checksum_file(f);
-	if (file_header->checksum != checksum) {
-		fprintf(stderr, "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
-			file_header->checksum, checksum);
-		retval = 0;
-	}
-	if (!read_header(f, OFFSET_SIZE, file_header))
-		return 0;
-	if (file_header->size != file_size) {
-		fprintf(stderr, "Declared file size doesn't match the real file size: %d/%d\n",
-			file_header->size, file_size);
-		retval = 0;
-	}
-	if (!read_header(f, OFFSET_VERSION, file_header))
-		return 0;
+    if (!read_header(f, OFFSET_FIRST_FILE_v2, file_header))
+      return 0;
+  } else {
+    fprintf(stderr, "Unknown format\n");
+    retval = 0;
+  }
+  if (file_header->size != file_size) {
+    fprintf(stderr, "Declared file size doesn't match the real file size: %d/%d\n",
+        file_header->size, file_size);
+    retval = 0;
+  }
 
-	if (!read_header(f, OFFSET_FIRST_FILE, file_header))
-		return 0;
-
-	return retval;
+  return retval;
 }
 int 
 read_entry(FILE * f, const entry_data_type_t type, webui_entry * entry)
@@ -199,13 +228,13 @@ main(int argc, char **argv)
 		return -1;
 	}
 	char		o;
-	int		check = 0;
+	int		validate_only = 0;
 	char		in_file_name[MAX_FILE_NAME_LEN] = {0};
 	char		dst_path  [MAX_FILE_NAME_LEN] = {0};
 	while ((o = getopt(argc, argv, ":c:x:ho:")) != -1) {
 		switch (o) {
 		case 'c':
-			check = 1;
+			validate_only = 1;
 			strncpy(in_file_name, optarg, 255);
 			break;
 		case 'x':
@@ -240,25 +269,26 @@ main(int argc, char **argv)
 	if (!valid_header(file, &file_header)) {
 		return -1;
 	}
-	if (mkdir(dst_path, 0770) != 0) {
-		if (EEXIST != errno) {
-			fprintf(stderr, "Unable to create directory %s: %s\n", dst_path, strerror(errno));
-			exit(-1);
-		}
-	} else {
-		fprintf(stdout, "Created directory %s\n", dst_path);
-	}
-
-	if (!check)
+  if (!validate_only) {
+    if (mkdir(dst_path, 0770) != 0) {
+      if (EEXIST != errno) {
+        fprintf(stderr, "Unable to create directory %s: %s\n", dst_path, strerror(errno));
+        exit(-1);
+      }
+    } else {
+      fprintf(stdout, "Created directory %s\n", dst_path);
+    }
 		extract_files(file, dst_path);
+  }
 	fclose(file);
-
 	fprintf(stdout,
 	       "\nIntegrity check passed:\n"
+         "WebUI format\tv.%d\n"
 	       "Magic number\t%#x\n"
 	       "File length\t%d bytes\n"
 	       "Version    \t%d.%d.%d.%d\n"
 	       "Checksum   \t%#x\n"
+         ,file_header.format_version
 	       ,file_header.magic
 	       ,file_header.size
 	       ,(file_header.version >> (0 * 8)) & 0xFF

@@ -14,11 +14,15 @@
 #define WEBUI_MAGIC 0x440C9ABD
 
 typedef enum {
-  OFFSET_MAGIC       = 0x0,
-  OFFSET_CHECKSUM    = 0x4,
-  OFFSET_SIZE        = 0x8,
-  OFFSET_VERSION     = 0xC,
-  OFFSET_FIRST_FILE  = 0x10
+  OFFSET_SIZE_v1 = 0,
+  OFFSET_VERSION_v1,
+  OFFSET_DESC,
+  OFFSET_FIRST_FILE_v1,
+  OFFSET_MAGIC,
+  OFFSET_CHECKSUM,
+  OFFSET_SIZE_v2,
+  OFFSET_VERSION_v2,
+  OFFSET_FIRST_FILE_v2
 } header_offset_t; 
 
 typedef enum {

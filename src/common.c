@@ -9,6 +9,20 @@
 #include "camtool.h"
 #include "common.h"
 
+// when change, update header_offset_t too
+const int32_t ui_header_field[] = {
+  0x0,
+  0x4,
+  0x8,
+  0x1D,
+  0x0,
+  0x4,
+  0x8,
+  0xC,
+  0x10
+};
+
+
 /*! Takes the open file descriptor pointing to a Web UI file 
     as an input and calculates the checksum  
 
@@ -17,7 +31,7 @@
 */ 
 int32_t calc_checksum_file (FILE* f)
 {
-  fseek(f, OFFSET_VERSION, SEEK_SET);
+  fseek(f, ui_header_field[OFFSET_VERSION_v2], SEEK_SET);
   int32_t sum = 0;
   unsigned char buf;
   while(1){

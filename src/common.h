@@ -13,6 +13,8 @@
 #define DEFAULT_PATH "./"
 #define WEBUI_MAGIC 0x440C9ABD
 
+extern const int32_t ui_header_field[];
+
 typedef enum {
 	OFFSET_SIZE_v1 = 0,
 	OFFSET_VERSION_v1,

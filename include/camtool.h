@@ -36,8 +36,7 @@ typedef struct webui_file_header_t {
 #pragma pack(pop)
 
 
-//!Header for files
-	that are packed into Web UI data blob
+//!Header for files that are packed into Web UI data blob
 		typedef struct webui_fentry_t {
 		int32_t		name_size;	/* !< Size of file name
 						 * string */
@@ -48,8 +47,7 @@ typedef struct webui_file_header_t {
 		char           *data;	/* !< File data */
 	}		webui_fentry;
 
-//!Header for directories
-	that are packed into Web UI data blob
+//!Header for directories that are packed into Web UI data blob
 		typedef struct webui_dentry_t {
 		int32_t		name_size;	/* !< Size of file name
 						 * string */
@@ -58,8 +56,7 @@ typedef struct webui_file_header_t {
 					 * case of directories) */
 	}		webui_dentry;
 
-//!Header for files
-	and directories hat are packed into Web UI data blob
+//!Header for files and directories hat are packed into Web UI data blob
 		typedef struct webui_entry_t {
 		int32_t		name_size;	/* !< Size of file name
 						 * string */

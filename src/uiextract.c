@@ -13,8 +13,6 @@
 #include "camtool.h"
 #include "common.h"
 
-extern const int32_t ui_header_field[];
-
 static void
 usage()
 {

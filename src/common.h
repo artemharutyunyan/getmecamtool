@@ -12,28 +12,38 @@
 
 #define DEFAULT_PATH "./"
 #define WEBUI_MAGIC 0x440C9ABD
+#define SYS_MAGIC   0x47454E42
 
 extern const int32_t ui_header_field[];
+extern const int32_t sys_header_field[];
 
 typedef enum {
-	OFFSET_SIZE_v1 = 0,
-	OFFSET_VERSION_v1,
-	OFFSET_DESC,
-	OFFSET_FIRST_FILE_v1,
-	OFFSET_MAGIC,
-	OFFSET_CHECKSUM,
-	OFFSET_SIZE_v2,
-	OFFSET_VERSION_v2,
-	OFFSET_FIRST_FILE_v2
-}		header_offset_t;
+	UI_OFFSET_SIZE_v1 = 0,
+	UI_OFFSET_VERSION_v1,
+	UI_OFFSET_DESC,
+	UI_OFFSET_FIRST_FILE_v1,
+	UI_OFFSET_MAGIC,
+	UI_OFFSET_CHECKSUM,
+	UI_OFFSET_SIZE_v2,
+	UI_OFFSET_VERSION_v2,
+	UI_OFFSET_FIRST_FILE_v2
+}		ui_header_offset_t;
 
 typedef enum {
-	TYPE_FILENAME_SIZE = 0,
-	TYPE_FILENAME,
-	TYPE_ENTRY_TYPE,
-	TYPE_FILE_SIZE,
-	TYPE_FILE
-}		entry_data_type_t;
+	SYS_OFFSET_MAGIC = 0,
+	SYS_OFFSET_RESERVE1,
+	SYS_OFFSET_RESERVE2,
+	SYS_OFFSET_SIZE_LINUX_BIN,
+	SYS_OFFSET_SIZE_ROMFS
+}   sys_header_offset_t;
+	
+typedef enum {
+	UI_TYPE_FILENAME_SIZE = 0,
+	UI_TYPE_FILENAME,
+	UI_TYPE_ENTRY_TYPE,
+	UI_TYPE_FILE_SIZE,
+	UI_TYPE_FILE
+}		ui_entry_data_type_t;
 
 //Function definitions
 

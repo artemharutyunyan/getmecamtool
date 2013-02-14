@@ -35,6 +35,16 @@ typedef struct webui_file_header_t {
 }		webui_file_header;
 #pragma pack(pop)
 
+///!sys file header for FI8910W and similar
+#pragma pack(push, 4)
+typedef struct sys_file_header_t {
+	int32_t		magic;	/* !< Magic number */
+	int32_t		reserve1;	/* !< something 1 */
+	int32_t		reserve2;	/* !< something 2 */
+	int32_t		size_linux;	/* !< Size of linux.bin */
+	int32_t		size_romfs;	/* !< Size of romfs */
+}		sys_file_header;
+#pragma pack(pop)
 
 //!Header for files that are packed into Web UI data blob
 		typedef struct webui_fentry_t {

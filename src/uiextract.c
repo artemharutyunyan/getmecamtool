@@ -104,9 +104,10 @@ ui_valid_header(FILE * f, webui_file_header * file_header)
 		if (!ui_read_header(f, UI_OFFSET_MAGIC, file_header))
 			return 0;
 		if (file_header->magic != WEBUI_MAGIC) {
-			fprintf(stderr, "Declared file magic number doesn't match the known number: %d/%d\n",
+			fprintf(stderr, "Declared file magic number doesn't match the known number: %#x/%#x\n",
 				file_header->magic, WEBUI_MAGIC);
 			retval = 0;
+      return retval; // no reason to continue
 		}
 		if (!ui_read_header(f, UI_OFFSET_CHECKSUM, file_header))
 			return 0;

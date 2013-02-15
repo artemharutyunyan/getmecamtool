@@ -26,7 +26,8 @@ const int32_t	sys_header_field[] = {
 	0x0,
   0x4,
   0x8,
-  0xA
+  0xC,
+  0x10
 };
 /*
  * ! Takes the open file descriptor pointing to a Web UI file as an input and

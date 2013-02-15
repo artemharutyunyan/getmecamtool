@@ -32,15 +32,6 @@ usage()
 }
 
 int32_t
-sys_valid_header(FILE * f, sys_file_header * file_header)
-{ 
-  
-	int32_t		retval = 1;
-
-  return 0;
-}
-
-int32_t
 sys_extract_files(FILE * f, const char *dst_path)
 {
   return 0;
@@ -84,6 +75,37 @@ sys_read_header(FILE * f, const sys_header_offset_t type, sys_file_header * file
 	}
 	return retval;
 }
+
+int32_t
+sys_valid_header(FILE * f, sys_file_header * file_header)
+{
+  fseek(f, 0, SEEK_END);
+  int32_t		file_size = ftell(f);
+  fseek(f, 0, SEEK_SET);
+  int32_t		retval = 1;
+  if (!sys_read_header(f, SYS_OFFSET_MAGIC, file_header))
+    return 0;
+  if (file_header->magic != SYS_MAGIC) {
+    fprintf(stderr, "Declared file magic number doesn't match the known number: %#x/%#x\n",
+        file_header->magic, SYS_MAGIC);
+    retval = 0;
+    return retval; // doesn't make sense to continue
+  }
+  if (!sys_read_header(f, SYS_OFFSET_RESERVE1, file_header))
+    return 0;
+  if (!sys_read_header(f, SYS_OFFSET_RESERVE2, file_header))
+    return 0;
+  if (!sys_read_header(f, SYS_OFFSET_SIZE_LINUX_BIN, file_header))
+    return 0;
+  if (!sys_read_header(f, SYS_OFFSET_SIZE_ROMFS, file_header))
+    return 0;
+  if ((sizeof(sys_file_header) + file_header->size_linux + file_header->size_romfs) != file_size) {
+    fprintf(stderr, "Declared sizes of linux.bin: %d and romfs: %d doesn't match the real data size: %d\n", file_header->size_linux, file_header->size_romfs, file_size - sizeof(sys_file_header));
+    retval = 0;
+  }
+  return retval;
+}
+
 int 
 main(int argc, char **argv)
 {

@@ -13,6 +13,12 @@
 #include "camtool.h"
 #include "common.h"
 
+static void 
+info()
+{
+  fprintf(stdout,"Try \'uiextract -h\' for more information\n");
+}
+
 static void
 usage()
 {
@@ -248,18 +254,18 @@ main(int argc, char **argv)
 			break;
 		case '?':
 			fprintf(stderr, "Illegal option -%c\n", optopt);
-			usage();
+			info();
 			return 1;
 		default:
 			fprintf(stderr, "Option -%c requires an argument.\n", optopt);
-			usage();
+			info();
 			return 1;
 		}
 	}
  
  for (index = optind; index < argc; index++) {
     fprintf (stderr, "Non-option argument %s\n", argv[index]);
-    usage();
+    info();
     return 1;
   }
 	

@@ -88,6 +88,7 @@ main(int argc, char **argv)
 	}
 	char		o;
 	int		  validate_only = 0;
+  int     index;
 	char		in_file_name[MAX_FILE_NAME_LEN] = {0};
 	char		dst_path  [MAX_FILE_NAME_LEN] = {0};
 	while ((o = getopt(argc, argv, ":c:x:ho:")) != -1) {
@@ -115,6 +116,12 @@ main(int argc, char **argv)
 			return 1;
 		}
 	}
+  for (index = optind; index < argc; index++) {
+    fprintf (stderr, "Non-option argument %s\n", argv[index]);
+    usage();
+    return 1;
+  }
+
 	if (!strlen(dst_path)) {
 		strncpy(dst_path, DEFAULT_PATH, sizeof(DEFAULT_PATH));
 	}

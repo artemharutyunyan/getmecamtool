@@ -9,7 +9,7 @@
 #include "common.h"
 
 // when change, update ui_header_offset_t too
-const int32_t	ui_header_field[] = {
+const int32_t   ui_header_field[] = {
 	0x0,
 	0x4,
 	0x8,
@@ -22,12 +22,12 @@ const int32_t	ui_header_field[] = {
 };
 
 // when change, update sys_header_offset_t too
-const int32_t	sys_header_field[] = {
+const int32_t   sys_header_field[] = {
 	0x0,
-  0x4,
-  0x8,
-  0xC,
-  0x10
+	0x4,
+	0x8,
+	0xC,
+	0x10
 };
 /*
  * ! Takes the open file descriptor pointing to a Web UI file as an input and
@@ -36,12 +36,12 @@ const int32_t	sys_header_field[] = {
  * \param f open file descriptor \return The checksum (sum of all the bytes that
  * follow file header)
  */
-int32_t 
+int32_t
 calc_checksum_file(FILE * f)
 {
 	fseek(f, ui_header_field[UI_OFFSET_VERSION_v2], SEEK_SET);
-	int32_t		sum = 0;
-	unsigned char	buf;
+	int32_t         sum = 0;
+	unsigned char   buf;
 	while (1) {
 		fread(&buf, 1, 1, f);
 		if (feof(f))
@@ -58,11 +58,11 @@ calc_checksum_file(FILE * f)
  * \param blob the blob containing Web UI data \return The checksum (sum of all
  * the bytes that follow file header)
  */
-int32_t 
+int32_t
 calc_checksum_blob(const webui_data_blob * blob)
 {
-	int32_t		sum = 0;
-	size_t		i = 0;
+	int32_t         sum = 0;
+	size_t          i = 0;
 
 	while (i < blob->size) {
 		sum += blob->data[i];

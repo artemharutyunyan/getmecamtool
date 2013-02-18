@@ -27,7 +27,7 @@ typedef enum {
 	UI_OFFSET_SIZE_v2,
 	UI_OFFSET_VERSION_v2,
 	UI_OFFSET_FIRST_FILE_v2
-}		ui_header_offset_t;
+} ui_header_offset_t;
 
 typedef enum {
 	SYS_OFFSET_MAGIC = 0,
@@ -35,16 +35,16 @@ typedef enum {
 	SYS_OFFSET_RESERVE2,
 	SYS_OFFSET_SIZE_LINUX_BIN,
 	SYS_OFFSET_SIZE_ROMFS
-}   sys_header_offset_t;
-	
+} sys_header_offset_t;
+
 typedef enum {
 	UI_TYPE_FILENAME_SIZE = 0,
 	UI_TYPE_FILENAME,
 	UI_TYPE_ENTRY_TYPE,
 	UI_TYPE_FILE_SIZE,
 	UI_TYPE_FILE
-}		ui_entry_data_type_t;
+} ui_entry_data_type_t;
 
 //Function definitions
 
-#endif	/* // __COMMON_H */
+#endif				/* // __COMMON_H */

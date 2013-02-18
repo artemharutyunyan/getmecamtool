@@ -32,12 +32,6 @@ usage()
 }
 
 int32_t
-sys_extract_files(FILE * f, const char *dst_path)
-{
-  return 0;
-}
-
-int32_t
 sys_read_header(FILE * f, const sys_header_offset_t type, sys_file_header * file_header)
 {
  	int32_t		retval = 1;
@@ -81,15 +75,17 @@ sys_valid_header(FILE * f, sys_file_header * file_header)
 {
   fseek(f, 0, SEEK_END);
   int32_t		file_size = ftell(f);
+  if(file_size <= 0) {
+    fprintf(stderr, "Invalid file size\n");
+    return 0;
+  }
   fseek(f, 0, SEEK_SET);
-  int32_t		retval = 1;
   if (!sys_read_header(f, SYS_OFFSET_MAGIC, file_header))
     return 0;
   if (file_header->magic != SYS_MAGIC) {
     fprintf(stderr, "Declared file magic number doesn't match the known number: %#x/%#x\n",
         file_header->magic, SYS_MAGIC);
-    retval = 0;
-    return retval; // doesn't make sense to continue
+    return 0;
   }
   if (!sys_read_header(f, SYS_OFFSET_RESERVE1, file_header))
     return 0;
@@ -100,10 +96,62 @@ sys_valid_header(FILE * f, sys_file_header * file_header)
   if (!sys_read_header(f, SYS_OFFSET_SIZE_ROMFS, file_header))
     return 0;
   if ((sizeof(sys_file_header) + file_header->size_linux + file_header->size_romfs) != file_size) {
-    fprintf(stderr, "Declared sizes of linux.bin: %d and romfs: %d doesn't match the real data size: %d\n", file_header->size_linux, file_header->size_romfs, file_size - sizeof(sys_file_header));
-    retval = 0;
+    fprintf(stderr, "Declared sizes of linux.bin: %d and romfs: %d doesn't match the real data size: %d\n", file_header->size_linux, file_header->size_romfs, file_size - (int32_t)sizeof(sys_file_header));
+    return 0;
   }
-  return retval;
+  fprintf(stdout, "System firmware file has valid structure\nlinux.bin size: %d, romfs.img size: %d",
+  file_header->size_linux,  file_header->size_romfs);
+  return 1;
+}
+
+int32_t
+sys_extract_file(FILE * f, const int32_t offset, const int32_t len, const char *file_name)
+{
+  char* buf = malloc(len);
+  if(buf) {
+    fseek(f, offset, SEEK_SET);
+    fread(buf, 1, len, f);
+    if (feof(f)) {
+      return 0;
+    } else if (ferror(f)) {
+      fprintf(stderr, "Error reading file: %s\n", strerror(errno));
+      return 0;
+    }
+    FILE * file = fopen(file_name, "wb");
+    if (file == NULL) {
+      fprintf(stderr, "Unable to write file %s: %s\n", file_name, strerror(errno));
+      return 0;
+    }
+
+    fprintf(stdout, "Extracting %s (%d bytes)...\n", file_name, len);
+    fwrite(buf, 1, len, file);
+    fclose(file);
+    free(buf);
+  } else {
+    fprintf(stderr, "Cannot allocate requested memory: %d bytes\n", len);
+    return 0;
+  }
+  return 1;
+}
+
+int32_t
+sys_extract_files(FILE * f, const char *dst_path)
+{
+  sys_file_header file_header = {0};
+  if (!sys_valid_header(f, &file_header)) {
+    return 0;
+  }
+  char dst_file[MAX_FILE_NAME_LEN];
+  memset(dst_file, '\0', sizeof(dst_file));
+  sprintf(dst_file, "%s%s", dst_path, "linux.bin");
+  if(!sys_extract_file(f, sizeof(sys_file_header), file_header.size_linux, dst_file))
+    return 0;
+  memset(dst_file, '\0', sizeof(dst_file));
+  sprintf(dst_file, "%s%s", dst_path, "romfs.img");
+  if(!sys_extract_file(f, sizeof(sys_file_header) + file_header.size_linux, file_header.size_romfs, dst_file))
+    return 0;
+
+  return 1;
 }
 
 int 
@@ -158,22 +206,25 @@ main(int argc, char **argv)
 		fprintf(stderr, "Error opening file %s: %s\n", in_file_name, strerror(errno));
 		return 1;
 	}
-
-	sys_file_header file_header = {0};
-	if (!sys_valid_header(file, &file_header)) {
-		return 1;
-	}
-	if (!validate_only) {
-		if (mkdir(dst_path, 0770) != 0) {
-			if (EEXIST != errno) {
-				fprintf(stderr, "Unable to create directory %s: %s\n", dst_path, strerror(errno));
-				exit(-1);
-			}
-		} else {
-			fprintf(stdout, "Created directory %s\n", dst_path);
-		}
-		sys_extract_files(file, dst_path);
-	}
+  
+  if(validate_only) {
+    sys_file_header file_header = {0};
+    if (!sys_valid_header(file, &file_header)) {
+      return 1;
+    }
+  } else {
+    if (mkdir(dst_path, 0770) != 0) {
+      if (EEXIST != errno) {
+        fprintf(stderr, "Unable to create directory %s: %s\n", dst_path, strerror(errno));
+        return 1;
+      }
+    } else {
+      fprintf(stdout, "Created directory %s\n", dst_path);
+    }
+    if(!sys_extract_files(file, dst_path)) {
+      fprintf(stderr, "Cannot extract system files, exiting...\n");
+    }
+  }
 
   return 0;
 }

@@ -172,7 +172,7 @@ ui_read_entry(FILE * f, const ui_entry_data_type_t type, webui_entry * entry)
 int32_t
 ui_extract_files(FILE * f, const char *dst_path)
 {
-	webui_entry	wui_entry = {0, 0, 0, 0, 0};
+	webui_entry	wui_entry = {0};
 	//max_buf = 0,
 		char		dst_file  [MAX_FILE_NAME_LEN];
 	//*buf = NULL;
@@ -195,14 +195,14 @@ ui_extract_files(FILE * f, const char *dst_path)
 	//type:	dir
 				if (mkdir(dst_file, 0770) != 0 && EEXIST != errno) {
 				fprintf(stderr, "Unable to create directory %s: %s\n", dst_file, strerror(errno));
-				exit(-1);
+				return 0;
 			}
 		} else if (wui_entry.type == 1) {
 	//type:	file
-				FILE * file = fopen(dst_file, "wb");
+      FILE * file = fopen(dst_file, "wb");
 			if (file == NULL) {
 				fprintf(stderr, "Unable to write file %s: %s\n", dst_file, strerror(errno));
-				exit(-1);
+				return 0;
 			}
 			if (!ui_read_entry(f, UI_TYPE_FILE_SIZE, &wui_entry))
 				return 0;
@@ -286,7 +286,7 @@ main(int argc, char **argv)
 		if (mkdir(dst_path, 0770) != 0) {
 			if (EEXIST != errno) {
 				fprintf(stderr, "Unable to create directory %s: %s\n", dst_path, strerror(errno));
-				exit(-1);
+				return 1;
 			}
 		} else {
 			fprintf(stdout, "Created directory %s\n", dst_path);

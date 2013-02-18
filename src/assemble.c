@@ -19,21 +19,21 @@
 #define TODO_HARDCODED_DIR_NAME "."
 #define TODO_HARDCODED_VERSION 0x12120402 
 
-#define WEBUI_DATABLOB_INITIAL_SIZE (1024 * 1024) // 1 MB
+#define WEBUI_DATABLOB_INITIAL_SIZE (1024 * 1024)	// 1 MB
 
 int webui_data_blob_clean (webui_data_blob* blob);
 int webui_data_blob_init  (webui_data_blob* blob, size_t offset);
 
+int webui_append_fentry(const webui_fentry * fentry, webui_data_blob * blob);
+int webui_append_dentry(const webui_dentry * fentry, webui_data_blob * blob);
 
-int webui_append_fentry (const webui_fentry* fentry, webui_data_blob* blob);
-int webui_append_dentry (const webui_dentry* fentry, webui_data_blob* blob);
-
-int get_file_content (const char* path, const size_t size, char* content);
-int traverse_target_dir (const char* dir_name, webui_data_blob* blob);
+int get_file_content(const char *path, const size_t size, char *content);
+int traverse_target_dir(const char *dir_name, webui_data_blob * blob);
 
 int webui_create_file (const webui_data_blob* blob, FILE* fd);
 
 int main() {
+
   webui_data_blob* blob;
   // Initialize the blob 
   webui_data_blob_init(blob, OFFSET_FIRST_FILE);
@@ -56,7 +56,9 @@ int main() {
 }
 
 /* Internal functions */
-int webui_create_file (const webui_data_blob* blob, FILE* fd) {
+int 
+webui_create_file (const webui_data_blob* blob, FILE* fd)
+{
 
   // Write the header first 
   webui_file_header h;
@@ -75,31 +77,33 @@ int webui_create_file (const webui_data_blob* blob, FILE* fd) {
 }
 
 /// \brief Appends a file name to the path  
-char* append_file_name (char* path, const char* fname) {
-  const size_t path_len = strlen (path),
-               fname_len = strlen (fname);
+char*
+append_file_name(char *path, const char *fname)
+{
+	const size_t    path_len = strlen(path), fname_len = strlen(fname);
 
-  assert ((path_len + fname_len) < MAX_PATH_LEN);
+	assert((path_len + fname_len) < MAX_PATH_LEN);
 
-  // Make sure we do not prepend an empty path with /
-  if (path[0] != '\0')
-    strcat (path, "/");  
+	// Make sure we do not prepend an empty path with /
+	if (path[0] != '\0')
+		strcat(path, "/");
 
-  strcat (path, fname);
-  return path;
-} 
+	strcat(path, fname);
+	return path;
+}
 
 /// \brief Given a directory name and the file name creates a path to a file   
-char* create_path (char* path, const char*dirname, const char* fname) {
-  const size_t dirname_len = strlen (dirname),
-               fname_len = strlen (fname); 
-  
-  assert ((dirname_len + fname_len) < MAX_PATH_LEN);
+char*
+create_path(char *path, const char *dirname, const char *fname)
+{
+	const size_t dirname_len = strlen(dirname), fname_len = strlen(fname);
 
-  path[0] = '\0';
-  append_file_name(path, dirname);
-  append_file_name(path, fname);
-  return path; 
+	assert((dirname_len + fname_len) < MAX_PATH_LEN);
+
+	path[0] = '\0';
+	append_file_name(path, dirname);
+	append_file_name(path, fname);
+	return path;
 }
 
 /// \brief Traverses the target directory and populates the memory blob with the Web UI data
@@ -209,132 +213,141 @@ int traverse_target_dir (const char* dir_name, webui_data_blob* blob) {
 } 
 
 /// \brief dumps the file into memory
-int get_file_content (const char* path, const size_t size, char *o) {
-  FILE* fd = fopen (path, "r");
-  
-  if (fd == NULL) {
-    // TODO: verbose error message 
-    perror ("fopen failed");
-    exit  (-1);
-  }
+int
+get_file_content(const char *path, const size_t size, char *o)
+{
+	FILE *fd = fopen(path, "r");
 
-  if (fread (o, 1, size, fd) != size) {
-    // TODO: verbose error message
-    perror ("fread failed");
-    exit (-1);
-  }
- 
-  fclose (fd);
-  return 0;
+	if (fd == NULL) {
+		// TODO: verbose error message 
+		perror("fopen failed");
+		exit(-1);
+	}
+
+	if (fread(o, 1, size, fd) != size) {
+		// TODO: verbose error message
+		perror("fread failed");
+		exit(-1);
+	}
+
+	fclose(fd);
+	return 0;
 }
 
 /// \brief Initialize Web UI blob data structure 
-int webui_data_blob_init (webui_data_blob* blob, size_t offset) {
+int
+webui_data_blob_init(webui_data_blob * blob, size_t offset)
+{
 
-  // TODO: assert that offset < WEBUI_DATABLOB_INITIAL_SIZE * 3
+	blob->data = malloc(WEBUI_DATABLOB_INITIAL_SIZE * 2);
 
-  blob->data = malloc (WEBUI_DATABLOB_INITIAL_SIZE * 2);
-
-  if (blob->data == NULL) {
-    // TODO Verbose error message 
-    perror ("malloc failed");
-    exit(-1);
-  }
+	if (blob->data == NULL) {
+		// TODO Verbose error message 
+		perror("malloc failed");
+		exit(-1);
+	}
 
   blob->alloc_size = WEBUI_DATABLOB_INITIAL_SIZE * 2;
   blob->size = offset;
 
-  return 0;
+	return 0;
 }
 
 /// \brief Cleans up Web UI data blob structure
-int webui_data_blob_clean (webui_data_blob* blob) {
-  free(blob->data);
-  return 0;
+int
+webui_data_blob_clean(webui_data_blob * blob)
+{
+	free(blob->data);
+	return 0;
 }
 
 /// \brief Calculates the size of the fentry 
-int get_fentry_size (const webui_fentry* fentry) {
-  return  (WEBUI_ENTRY_NAME_SIZE_FIELD_LEN + 
-          fentry->name_size + 
-          WEBUI_ENTRY_TYPE_FIELD_LEN + 
-          WEBUI_FENTRY_SIZE_FIELD_LEN + 
-          fentry->size);
+int
+get_fentry_size(const webui_fentry * fentry)
+{
+	return (WEBUI_ENTRY_NAME_SIZE_FIELD_LEN +
+		fentry->name_size +
+		WEBUI_ENTRY_TYPE_FIELD_LEN +
+		WEBUI_FENTRY_SIZE_FIELD_LEN + fentry->size);
 }
 
-  
-int webui_append_fentry (const webui_fentry* fentry, webui_data_blob* blob) {
-  // Make sure there is enough memory allocaed 
-  if (blob->alloc_size < (blob->size + get_fentry_size(fentry)) ) {
-    //TODO Realloc
-    perror("Realloc");
-    exit (-1);
-  }  
 
-  // Copy file entry fields into the blob 
-  size_t offset = blob->size; 
-  
-  // Size of the name field
-  size_t name_size_int = fentry->name_size - 1; // remove leading .
-  memmove ( &blob->data[offset], &name_size_int, WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
-  offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
+int
+webui_append_fentry(const webui_fentry * fentry, webui_data_blob * blob)
+{
+	// Make sure there is enough memory allocaed 
+	if (blob->alloc_size < (blob->size + get_fentry_size(fentry))) {
+		// TODO Realloc
+		perror("Realloc");
+		exit(-1);
+	}
+	// Copy file entry fields into the blob 
+	size_t          offset = blob->size;
 
-  // Name field
-  // remove leading .  
-  memmove (&blob->data[offset], &fentry->name[1], name_size_int);
-  offset += name_size_int;
+	// Size of the name field
+	size_t          name_size_int = fentry->name_size - 1;	// remove leading .
+	memmove(&blob->data[offset], &name_size_int,
+		WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
+	offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
 
-  // Type field 
-  memmove (&blob->data[offset], &fentry->type, WEBUI_ENTRY_TYPE_FIELD_LEN);
-  offset += WEBUI_ENTRY_TYPE_FIELD_LEN;
+	// Name field
+	// remove leading .  
+	memmove(&blob->data[offset], &fentry->name[1], name_size_int);
+	offset += name_size_int;
 
-  // Size of the file 
-  memmove (&blob->data[offset], &fentry->size, WEBUI_FENTRY_SIZE_FIELD_LEN);
-  offset += WEBUI_FENTRY_SIZE_FIELD_LEN;
-  
-  // File contents  
-  memmove (&blob->data[offset], fentry->data, fentry->size);
-  offset += fentry->size; 
+	// Type field 
+	memmove(&blob->data[offset], &fentry->type, WEBUI_ENTRY_TYPE_FIELD_LEN);
+	offset += WEBUI_ENTRY_TYPE_FIELD_LEN;
 
-  blob->size = offset;
+	// Size of the file 
+	memmove(&blob->data[offset], &fentry->size, WEBUI_FENTRY_SIZE_FIELD_LEN);
+	offset += WEBUI_FENTRY_SIZE_FIELD_LEN;
 
-  return 0;
-} 
+	// File contents 
+	memmove(&blob->data[offset], fentry->data, fentry->size);
+	offset += fentry->size;
+
+	blob->size = offset;
+
+	return 0;
+}
 
 /// \brief Calculates the size of the fentry 
-int get_dentry_size (const webui_dentry* dentry) {
-  return  (WEBUI_ENTRY_NAME_SIZE_FIELD_LEN + 
-          dentry->name_size + 
-          WEBUI_ENTRY_TYPE_FIELD_LEN);
+int
+get_dentry_size(const webui_dentry * dentry)
+{
+	return (WEBUI_ENTRY_NAME_SIZE_FIELD_LEN +
+		dentry->name_size + WEBUI_ENTRY_TYPE_FIELD_LEN);
 }
 
-int webui_append_dentry (const webui_dentry* dentry, webui_data_blob* blob) {
- 
-   // Make sure there is enough memory allocaed 
-  if (blob->alloc_size < (blob->size + get_dentry_size(dentry)) ) {
-    //TODO Realloc
-    perror("Realloc");
-    exit (-1);
-  }  
+int
+webui_append_dentry(const webui_dentry * dentry, webui_data_blob * blob)
+{
 
-  // Copy file entry fields into the blob 
-  size_t offset = blob->size; 
-  
-  // Size of the name field
-  memmove ( &blob->data[offset], &dentry->name_size, WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
-  offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
+	// Make sure there is enough memory allocaed 
+	if (blob->alloc_size < (blob->size + get_dentry_size(dentry))) {
+		// TODO Realloc
+		perror("Realloc");
+		exit(-1);
+	}
+	// Copy file entry fields into the blob 
+	size_t          offset = blob->size;
 
-  // Name field 
-  // remove leading .
-  memmove (&blob->data[offset], &dentry->name[1], dentry->name_size - 1);
-  offset += (dentry->name_size - 1);
+	// Size of the name field
+	memmove(&blob->data[offset], &dentry->name_size,
+		WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
+	offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
 
-  // Type field 
-  memmove (&blob->data[offset], &dentry->type, WEBUI_ENTRY_TYPE_FIELD_LEN);
-  offset += WEBUI_ENTRY_TYPE_FIELD_LEN;
-  
-  blob->size = offset;
-  
-  return 0;
+	// Name field 
+	// remove leading .
+	memmove(&blob->data[offset], &dentry->name[1], dentry->name_size - 1);
+	offset += (dentry->name_size - 1);
+
+	// Type field 
+	memmove(&blob->data[offset], &dentry->type, WEBUI_ENTRY_TYPE_FIELD_LEN);
+	offset += WEBUI_ENTRY_TYPE_FIELD_LEN;
+
+	blob->size = offset;
+
+	return 0;
 }
-

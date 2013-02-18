@@ -1,3 +1,8 @@
+/*
+
+  TODO: Header goes here 
+
+*/
 #ifndef __COMMON_H
 #define __COMMON_H
 
@@ -36,7 +41,6 @@ typedef enum {
 	SYS_OFFSET_SIZE_LINUX_BIN,
 	SYS_OFFSET_SIZE_ROMFS
 } sys_header_offset_t;
->>>>>>> 4652357de6a844e5f5efca7f4bd3e5ed8c794a22
 
 typedef enum {
 	UI_TYPE_FILENAME_SIZE = 0,

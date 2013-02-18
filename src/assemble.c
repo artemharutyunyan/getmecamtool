@@ -36,11 +36,13 @@ int main() {
 
   webui_data_blob* blob;
   // Initialize the blob 
-  webui_data_blob_init(blob, OFFSET_FIRST_FILE);
+  int32_t first_file_offset = ui_header_field[UI_OFFSET_FIRST_FILE_v2];
+  webui_data_blob_init(blob, first_file_offset);
 
   // Record the version (has to be done before checksum calculation) 
   int32_t version = TODO_HARDCODED_VERSION; 
-  memmove (&blob->data[OFFSET_VERSION], &version, sizeof(version));
+  int32_t version_offset = ui_header_field[UI_OFFSET_VERSION_v2];
+  memmove (&blob->data[version_offset], &version, sizeof(version));
 
   // Traverse the target directory and pack
   traverse_target_dir (TODO_HARDCODED_DIR_NAME, blob);
@@ -63,15 +65,18 @@ webui_create_file (const webui_data_blob* blob, FILE* fd)
   // Write the header first 
   webui_file_header h;
   
+  int32_t version_offset = ui_header_field[UI_OFFSET_VERSION_v2];
+
   h.magic = WEBUI_MAGIC;
-  h.checksum = calc_checksum_blob (blob, OFFSET_VERSION);  
+  h.checksum = calc_checksum_blob (blob, version_offset);  
   h.version = TODO_HARDCODED_VERSION;
   h.size = blob->size;
   
   fwrite (&h, 1, sizeof(h), fd);
 
   // Write the blob 
-  fwrite (&blob->data[OFFSET_FIRST_FILE], 1, blob->size, fd); 
+  int32_t first_file_offset = ui_header_field[UI_OFFSET_FIRST_FILE_v2];
+  fwrite (&blob->data[first_file_offset], 1, blob->size, fd); 
 
   return 0;
 }

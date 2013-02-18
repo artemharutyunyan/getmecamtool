@@ -61,7 +61,7 @@ typedef struct webui_entry_t {
 
 // Function declarations
 int32_t calc_checksum_file(FILE*);
-int32_t calc_checksum_blob(const webui_data_blob*); 
+int32_t calc_checksum_blob(const webui_data_blob*, const size_t); 
 
 
 #endif  // __CAMTOOL_H_

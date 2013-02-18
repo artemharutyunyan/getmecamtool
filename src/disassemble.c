@@ -15,7 +15,6 @@
 #include "common.h"
 
 #define DEFAULT_PATH "./"
-#define WEBUI_MAGIC 0x440C9ABD
 
 static void usage() {
   fprintf(stdout,

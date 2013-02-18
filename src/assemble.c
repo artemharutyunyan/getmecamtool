@@ -10,17 +10,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <inttypes.h>
 
 #include "camtool.h"
 
 #include "common.h"
 
 #define TODO_HARDCODED_DIR_NAME "."
+#define TODO_HARDCODED_VERSION 0x12120402 
 
 #define WEBUI_DATABLOB_INITIAL_SIZE (1024 * 1024) // 1 MB
 
-int webui_data_blob_init  (webui_data_blob* blob);
 int webui_data_blob_clean (webui_data_blob* blob);
+int webui_data_blob_init  (webui_data_blob* blob, size_t offset);
 
 
 int webui_append_fentry (const webui_fentry* fentry, webui_data_blob* blob);
@@ -29,17 +31,48 @@ int webui_append_dentry (const webui_dentry* fentry, webui_data_blob* blob);
 int get_file_content (const char* path, const size_t size, char* content);
 int traverse_target_dir (const char* dir_name, webui_data_blob* blob);
 
+int webui_create_file (const webui_data_blob* blob, FILE* fd);
 
 int main() {
   webui_data_blob* blob;
-  webui_data_blob_init(blob);
+  // Initialize the blob 
+  webui_data_blob_init(blob, OFFSET_FIRST_FILE);
+
+  // Record the version (has to be done before checksum calculation) 
+  int32_t version = TODO_HARDCODED_VERSION; 
+  memmove (&blob->data[OFFSET_VERSION], &version, sizeof(version));
+
+  // Traverse the target directory and pack
   traverse_target_dir (TODO_HARDCODED_DIR_NAME, blob);
-  size_t n = fwrite(blob->data, 1, blob->size, stdout);
+  //size_t n = fwrite(blob->data, 1, blob->size, stdout);
+  
+  // Wrtie the result to a file 
+  FILE* fd = fopen ("webui.bin", "w");
+  webui_create_file (blob, fd); 
+  fclose(fd);  
+
   webui_data_blob_clean(blob);
   return 0;
 }
 
 /* Internal functions */
+int webui_create_file (const webui_data_blob* blob, FILE* fd) {
+
+  // Write the header first 
+  webui_file_header h;
+  
+  h.magic = WEBUI_MAGIC;
+  h.checksum = calc_checksum_blob (blob, OFFSET_VERSION);  
+  h.version = TODO_HARDCODED_VERSION;
+  h.size = blob->size;
+  
+  fwrite (&h, 1, sizeof(h), fd);
+
+  // Write the blob 
+  fwrite (&blob->data[OFFSET_FIRST_FILE], 1, blob->size, fd); 
+
+  return 0;
+}
 
 /// \brief Appends a file name to the path  
 char* append_file_name (char* path, const char* fname) {
@@ -69,6 +102,7 @@ char* create_path (char* path, const char*dirname, const char* fname) {
   return path; 
 }
 
+/// \brief Traverses the target directory and populates the memory blob with the Web UI data
 int traverse_target_dir (const char* dir_name, webui_data_blob* blob) { 
   struct dirent* dir_entry;
   int err_code = 0;
@@ -195,7 +229,9 @@ int get_file_content (const char* path, const size_t size, char *o) {
 }
 
 /// \brief Initialize Web UI blob data structure 
-int webui_data_blob_init (webui_data_blob* blob) {
+int webui_data_blob_init (webui_data_blob* blob, size_t offset) {
+
+  // TODO: assert that offset < WEBUI_DATABLOB_INITIAL_SIZE * 3
 
   blob->data = malloc (WEBUI_DATABLOB_INITIAL_SIZE * 2);
 
@@ -206,7 +242,7 @@ int webui_data_blob_init (webui_data_blob* blob) {
   }
 
   blob->alloc_size = WEBUI_DATABLOB_INITIAL_SIZE * 2;
-  blob->size = 0;
+  blob->size = offset;
 
   return 0;
 }

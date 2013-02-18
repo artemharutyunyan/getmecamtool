@@ -35,10 +35,10 @@ int32_t calc_checksum_file (FILE* f)
     \param blob the blob containing Web UI data 
     \return The checksum (sum of all the bytes that follow file header)
 */ 
-int32_t calc_checksum_blob (const webui_data_blob* blob)
+int32_t calc_checksum_blob (const webui_data_blob* blob, const size_t offset)
 {
   int32_t sum = 0;
-  size_t i = 0;
+  size_t i = offset;
 
   while (i < blob->size) {
     sum += blob->data[i];

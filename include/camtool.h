@@ -25,12 +25,12 @@ typedef struct webui_data_blob_t {
 ///!Web UI file header v .1 & 2
 #pragma pack(push, 4)
 typedef struct webui_file_header_t {
-	int32_t         magic;	/* !< Magic number */
-	int32_t         checksum;	/* !< Checksum (sum of all bytes starting from offset 12) */
-	int32_t         size;	/* !< Size of file */
-	int32_t         version;	/* !< Version */
+	int32_t         magic;	        /* !< Magic number */
+	int32_t         checksum;	      /* !< Checksum (sum of all bytes starting from offset 12) */
+	int32_t         size;	          /* !< Size of file */
+	int32_t         version;	      /* !< Version */
 	int32_t         format_version;	/* !< WebUI format version */
-	char            desc[21];	/* !< Description */
+	char            desc[21];	      /* !< Description */
 } webui_file_header;
 #pragma pack(pop)
 

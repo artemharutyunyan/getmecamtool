@@ -65,18 +65,18 @@ webui_create_file (const webui_data_blob* blob, FILE* fd)
   // Write the header first 
   webui_file_header h;
   
-  int32_t version_offset = ui_header_field[UI_OFFSET_VERSION_v2];
+  uint32_t version_offset = ui_header_field[UI_OFFSET_VERSION_v2];
 
   h.magic = WEBUI_MAGIC;
   h.checksum = calc_checksum_blob (blob, version_offset);  
   h.version = TODO_HARDCODED_VERSION;
   h.size = blob->size;
   
-  fwrite (&h, 1, sizeof(h), fd);
+  uint32_t first_file_offset = ui_header_field[UI_OFFSET_FIRST_FILE_v2];
+  fwrite (&h, 1, first_file_offset, fd);
 
   // Write the blob 
-  int32_t first_file_offset = ui_header_field[UI_OFFSET_FIRST_FILE_v2];
-  fwrite (&blob->data[first_file_offset], 1, blob->size, fd); 
+  fwrite (&blob->data[first_file_offset], 1, blob->size - first_file_offset , fd); 
 
   return 0;
 }

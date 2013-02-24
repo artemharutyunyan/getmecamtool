@@ -17,9 +17,9 @@
 
 // !Web UI data blob
 typedef struct webui_data_blob_t {
-	size_t          size;
-	size_t          alloc_size;
-	char           *data;
+	size_t        size;
+	size_t        alloc_size;
+	unsigned char *data;
 } webui_data_blob;
 
 ///!Web UI file header v .1 & 2

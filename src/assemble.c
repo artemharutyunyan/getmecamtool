@@ -21,18 +21,35 @@
 
 #define WEBUI_DATABLOB_INITIAL_SIZE (1024 * 1024)	// 1 MB
 
-int webui_data_blob_clean (webui_data_blob* blob);
-int webui_data_blob_init  (webui_data_blob* blob, size_t offset);
+static int webui_data_blob_clean (webui_data_blob* blob);
+static int webui_data_blob_init  (webui_data_blob* blob, size_t offset);
 
-int webui_append_fentry(const webui_fentry * fentry, webui_data_blob * blob);
-int webui_append_dentry(const webui_dentry * fentry, webui_data_blob * blob);
+static int webui_append_fentry(const webui_fentry * fentry, webui_data_blob * blob);
+static int webui_append_dentry(const webui_dentry * fentry, webui_data_blob * blob);
 
-int get_file_content(const char *path, const size_t size, char *content);
-int traverse_target_dir(const char *dir_name, webui_data_blob * blob);
+static int get_file_content(const char *path, const size_t size, char *content);
+static int traverse_target_dir(const char *dir_name, webui_data_blob * blob);
 
-int webui_create_file (const webui_data_blob* blob, FILE* fd);
+static int webui_create_file (const webui_data_blob* blob, FILE* fd);
 
-int main() {
+static void 
+usage()
+{
+  fprintf(stdout,
+  "Tool for packing WebUI firmware.\n"
+  "Usage: uipack -d <dir> -o <output file>\n"
+  "\t-d <dir> directory which needs to be packed\n"
+  "\t-o <output file> output file name\n");  
+}
+
+int 
+main( int argc, char** argv) 
+{
+
+  if (argc < 4) {
+    usage();
+    return 1;
+  }
 
   webui_data_blob* blob;
   // Initialize the blob 
@@ -49,7 +66,7 @@ int main() {
   //size_t n = fwrite(blob->data, 1, blob->size, stdout);
   
   // Wrtie the result to a file 
-  FILE* fd = fopen ("webui.bin", "w");
+  FILE* fd = fopen ("../webui.bin", "w");
   webui_create_file (blob, fd); 
   fclose(fd);  
 
@@ -112,7 +129,9 @@ create_path(char *path, const char *dirname, const char *fname)
 }
 
 /// \brief Traverses the target directory and populates the memory blob with the Web UI data
-int traverse_target_dir (const char* dir_name, webui_data_blob* blob) { 
+int 
+traverse_target_dir (const char* dir_name, webui_data_blob* blob) 
+{ 
   struct dirent* dir_entry;
   int err_code = 0;
   char full_path[MAX_PATH_LEN] = {'\0'};
@@ -145,7 +164,7 @@ int traverse_target_dir (const char* dir_name, webui_data_blob* blob) {
     if (stat (full_path, &s)) {
       // TODO: verbose error message 
       // Proper error handling 
-      printf ("Error doing fstatat on %s\n", full_path);
+      fprintf (stderr, "Error doing fstatat on %s\n", full_path);
       perror ("fstatat failed");
       return -1;
     }
@@ -196,7 +215,7 @@ int traverse_target_dir (const char* dir_name, webui_data_blob* blob) {
     if (stat (full_path, &s)) {
       // TODO: verbose error message 
       // Proper error handling 
-      printf ("Error doing fstatat on %s\n", full_path);
+      fprintf (stderr, "Error doing fstatat on %s\n", full_path);
       perror ("fstatat failed");
       return -1;
     }
@@ -287,12 +306,11 @@ webui_append_fentry(const webui_fentry * fentry, webui_data_blob * blob)
 		exit(-1);
 	}
 	// Copy file entry fields into the blob 
-	size_t          offset = blob->size;
+	size_t offset = blob->size;
 
 	// Size of the name field
-	size_t          name_size_int = fentry->name_size - 1;	// remove leading .
-	memmove(&blob->data[offset], &name_size_int,
-		WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
+	size_t  name_size_int = fentry->name_size - 1;	// remove leading .
+	memmove(&blob->data[offset], &name_size_int, WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
 	offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
 
 	// Name field

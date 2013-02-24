@@ -42,12 +42,14 @@ calc_checksum_file(FILE * f)
 	fseek(f, ui_header_field[UI_OFFSET_VERSION_v2], SEEK_SET);
 	int32_t         sum = 0;
 	unsigned char   buf;
+
 	while (1) {
 		fread(&buf, 1, 1, f);
 		if (feof(f))
 			break;
 		sum += buf;
 	}
+
 	return sum;
 }
 

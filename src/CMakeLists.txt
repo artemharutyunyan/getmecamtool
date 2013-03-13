@@ -7,8 +7,8 @@ ADD_LIBRARY (common common.c)
 SET(CAMTOOL_LIBS common)
 
 # Assemble utility compilation
-ADD_EXECUTABLE ( assemble assemble.c ) 
-TARGET_LINK_LIBRARIES (assemble ${CAMTOOL_LIBS})
+ADD_EXECUTABLE ( uipack uipack.c ) 
+TARGET_LINK_LIBRARIES (uipack ${CAMTOOL_LIBS})
 
 # WebUI extracting utility compilation
 ADD_EXECUTABLE ( uiextract uiextract.c ) 

@@ -9,14 +9,14 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <getopt.h>
 
 #include "camtool.h"
-
 #include "common.h"
 
-#define TODO_HARDCODED_DIR_NAME "."
 #define TODO_HARDCODED_VERSION 0x12120402 
 
 #define WEBUI_DATABLOB_INITIAL_SIZE (1024 * 1024)	// 1 MB
@@ -39,7 +39,8 @@ usage()
   "Tool for packing WebUI firmware.\n"
   "Usage: uipack -d <dir> -o <output file>\n"
   "\t-d <dir> directory which needs to be packed\n"
-  "\t-o <output file> output file name\n");  
+  "\t-o <output file> output file name\n"
+  "\t-h prints this message\n");  
 }
 
 int 
@@ -50,6 +51,49 @@ main( int argc, char** argv)
     usage();
     return 1;
   }
+
+  char target_dir_name[MAX_FILE_NAME_LEN];
+  target_dir_name[0] = '\0';
+
+  char out_file_name[MAX_FILE_NAME_LEN];
+  out_file_name[0] = '\0';
+
+  char o;
+  while ((o = getopt(argc, argv, ":d:o:h")) != -1) {
+    switch(o) {
+    case 'd':
+      if (strlen(optarg) > MAX_FILE_NAME_LEN) {
+        fprintf(stderr, "%s can not be longer than %d\n", optarg, MAX_FILE_NAME_LEN);
+        return 1;
+      }
+      strncpy(target_dir_name, optarg, MAX_FILE_NAME_LEN);
+      break;
+    case 'o':
+      if (strlen(optarg) > MAX_FILE_NAME_LEN) {
+        fprintf(stderr, "%s can not be longer than %d\n", optarg, MAX_FILE_NAME_LEN);
+        return 1;
+      }
+      strncpy(out_file_name, optarg, MAX_FILE_NAME_LEN);
+      break;
+    case 'h':
+      usage();
+      return 0;
+    case '?':
+      fprintf(stderr, "Illegal option -%c\n", optopt);
+      usage();
+      return 1;
+    defalt:
+      fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+      usage();
+      return 1;
+    }
+  }
+
+  if (strlen(target_dir_name) == 0 || strlen(out_file_name) == 0) {
+    usage();
+    return 1;
+  }
+    
 
   webui_data_blob* blob;
   // Initialize the blob 
@@ -62,11 +106,17 @@ main( int argc, char** argv)
   memmove (&blob->data[version_offset], &version, sizeof(version));
 
   // Traverse the target directory and pack
-  traverse_target_dir (TODO_HARDCODED_DIR_NAME, blob);
+  traverse_target_dir (target_dir_name, blob);
   //size_t n = fwrite(blob->data, 1, blob->size, stdout);
   
   // Wrtie the result to a file 
-  FILE* fd = fopen ("../webui.bin", "w");
+  FILE* fd = fopen (out_file_name, "w");
+  if (fd == NULL) {
+    fprintf(stderr, "Failed to open output file %s: %s\n", 
+            out_file_name,
+            strerror(errno));
+    return 1;
+  }
   webui_create_file (blob, fd); 
   fclose(fd);  
 
@@ -140,10 +190,10 @@ traverse_target_dir (const char* dir_name, webui_data_blob* blob)
   DIR* dir = opendir (dir_name);
 
   if ( dir == NULL ) {
-    // TODO: verbose error message 
-    // Proper error handling
-    perror ("opendir failed ");
-    return -1;
+    fprintf(stderr, "Failed to open directory %s: %s\n", 
+            dir_name,
+            strerror(errno));
+    exit(1);
   }
   
   // Iterate over entries 
@@ -162,11 +212,10 @@ traverse_target_dir (const char* dir_name, webui_data_blob* blob)
     append_file_name (full_path, dir_entry->d_name);
     
     if (stat (full_path, &s)) {
-      // TODO: verbose error message 
-      // Proper error handling 
-      fprintf (stderr, "Error doing fstatat on %s\n", full_path);
-      perror ("fstatat failed");
-      return -1;
+       fprintf(stderr, "Error doing fstatat on %s: %s\n", 
+               full_path,
+               strerror(errno));
+      exit(-1);
     }
 
     if (S_ISDIR(s.st_mode)) {
@@ -213,11 +262,10 @@ traverse_target_dir (const char* dir_name, webui_data_blob* blob)
     append_file_name (full_path, dir_entry->d_name);
     
     if (stat (full_path, &s)) {
-      // TODO: verbose error message 
-      // Proper error handling 
-      fprintf (stderr, "Error doing fstatat on %s\n", full_path);
-      perror ("fstatat failed");
-      return -1;
+      fprintf(stderr, "Error doing fstatat on %s: %s\n", 
+              full_path,
+              strerror(errno));
+      exit(-1);
     }
 
     if (S_ISDIR(s.st_mode)) {
@@ -243,15 +291,17 @@ get_file_content(const char *path, const size_t size, char *o)
 	FILE *fd = fopen(path, "r");
 
 	if (fd == NULL) {
-		// TODO: verbose error message 
-		perror("fopen failed");
+    fprintf(stderr, "Error openning %s: %s\n", 
+            path,
+            strerror(errno));
 		exit(-1);
 	}
 
 	if (fread(o, 1, size, fd) != size) {
-		// TODO: verbose error message
-		perror("fread failed");
-		exit(-1);
+    fprintf(stderr, "Error reading %s: %s\n", 
+            path,
+            strerror(errno));
+		exit(1);
 	}
 
 	fclose(fd);
@@ -266,9 +316,8 @@ webui_data_blob_init(webui_data_blob * blob, size_t offset)
 	blob->data = malloc(WEBUI_DATABLOB_INITIAL_SIZE * 2);
 
 	if (blob->data == NULL) {
-		// TODO Verbose error message 
-		perror("malloc failed");
-		exit(-1);
+		fprintf(stderr, "Failed to allocate memory");
+		exit(1);
 	}
 
   blob->alloc_size = WEBUI_DATABLOB_INITIAL_SIZE * 2;
@@ -301,9 +350,8 @@ webui_append_fentry(const webui_fentry * fentry, webui_data_blob * blob)
 {
 	// Make sure there is enough memory allocaed 
 	if (blob->alloc_size < (blob->size + get_fentry_size(fentry))) {
-		// TODO Realloc
-		perror("Realloc");
-		exit(-1);
+	  fprintf(stderr, "Memory limit exceeded. Packed data can be at most %lu bytes", blob->alloc_size);	
+		exit(1);
 	}
 	// Copy file entry fields into the blob 
 	size_t offset = blob->size;
@@ -349,9 +397,8 @@ webui_append_dentry(const webui_dentry * dentry, webui_data_blob * blob)
 
 	// Make sure there is enough memory allocaed 
 	if (blob->alloc_size < (blob->size + get_dentry_size(dentry))) {
-		// TODO Realloc
-		perror("Realloc");
-		exit(-1);
+    fprintf(stderr, "Memory limit exceeded. Packed data can be at most %lu bytes", blob->alloc_size);	
+		exit(1);
 	}
 	// Copy file entry fields into the blob 
 	size_t          offset = blob->size;

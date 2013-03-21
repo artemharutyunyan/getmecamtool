@@ -16,8 +16,9 @@
 #define WEBUI_DENTRY_MAX_SIZE (WEBUI_ENTRY_NAME_SIZE_FILED_LEN + MAX_PATH_LEN + WEBUI_ENTRY_TYPE_FIELD_LEN)
 
 #define DEFAULT_PATH "./"
-#define WEBUI_MAGIC 0x440C9ABD
-#define SYS_MAGIC   0x47454E42
+#define WEBUI_MAGIC  0x440C9ABD
+#define SYS_MAGIC    0x47454E42
+#define SYS_RESERVED 0x00000001
 
 extern const int32_t ui_header_field[];
 extern const int32_t sys_header_field[];

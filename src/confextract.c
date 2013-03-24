@@ -35,10 +35,72 @@ conf_extract_conf(FILE * f, FILE * out_f)
 {
   return 1;
 }
+int32_t
+conf_read_header(FILE * f, const conf_header_offset_t type,
+	       conf_file_header * file_header)
+{
+	int32_t         retval = 1;
+	fseek(f, conf_header_field[type], SEEK_SET);
+	switch (type) {
+	case CONF_OFFSET_MAGIC:
+		fread(&file_header->magic, 1, 4, f);
+		// magic number
+		break;
+	case CONF_OFFSET_RESERVE1:
+		fread(&file_header->checksum, 1, 4, f);
+		// declared checksum
+		break;
+	case CONF_OFFSET_RESERVE2:
+		fread(&file_header->checksum, 1, 4, f);
+		// declared checksum
+		break;
+	case CONF_OFFSET_CAMID:
+		fread(&file_header->camid, 1, 13, f);
+    // camera ID
+    break;
+	case CONF_OFFSET_SYS_VER:
+		fread(&file_header->sysver, 1, 4, f);
+		// system version
+		break;
+	case CONF_OFFSET_UI_VER:
+		fread(&file_header->webuiver, 1, 4, f);
+		// WebUI firmware version
+		break;
+	case CONF_OFFSET_ALIAS:
+		fread(&file_header->alias, 1, 21, f);
+		break;
+	default:
+		retval = 0;
+		break;
+	}
+	if (feof(f)) {
+		retval = 0;
+	} else if (ferror(f)) {
+		fprintf(stderr, "Error reading file: %s\n", strerror(errno));
+		retval = 0;
+	}
+	return retval;
+}
 
 int32_t
 conf_valid_file(FILE * f, conf_file * conf)
 {
+	int32_t         retval = 1;
+	fseek(f, 0, SEEK_SET);
+  if (!conf_read_header(f, CONF_OFFSET_MAGIC, &conf->header))
+    return 0;
+  if (!conf_read_header(f, CONF_OFFSET_RESERVE1, &conf->header))
+    return 0;
+  if (!conf_read_header(f, CONF_OFFSET_RESERVE2, &conf->header))
+    return 0;
+  if (!conf_read_header(f, CONF_OFFSET_CAMID, &conf->header))
+    return 0;
+  if (!conf_read_header(f, CONF_OFFSET_SYS_VER, &conf->header))
+    return 0;
+  if (!conf_read_header(f, CONF_OFFSET_UI_VER, &conf->header))
+    return 0;
+  if (!conf_read_header(f, CONF_OFFSET_ALIAS, &conf->header))
+    return 0;
   return 1;
 }
 int32_t

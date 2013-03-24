@@ -177,16 +177,16 @@ main(int argc, char **argv)
 		switch (o) {
 		case 'c':
 			validate_only = 1;
-			strncpy(in_file_name, optarg, 255);
+			strncpy(in_file_name, optarg, MAX_FILE_NAME_LEN);
 			break;
 		case 'x':
-			strncpy(in_file_name, optarg, 255);
+			strncpy(in_file_name, optarg, MAX_FILE_NAME_LEN);
 			break;
 		case 'h':
 			usage();
       return 0;
 		case 'o':
-			strncpy(dst_path, optarg, 1023);
+			strncpy(dst_path, optarg, MAX_PATH_LEN);
 			break;
 		case '?':
 			fprintf(stderr, "Illegal option -%c\n", optopt);

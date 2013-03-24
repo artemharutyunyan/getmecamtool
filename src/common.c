@@ -29,6 +29,19 @@ const int32_t   sys_header_field[] = {
 	0xC,
 	0x10
 };
+
+// when change, update conf_header_offset_t too
+const int32_t   conf_header_field[] = {
+	0x0,
+	0x4,
+	0x8,
+	0xC,
+	0x19,
+  0x1D,
+  0x21
+};
+
+
 /*
  * ! Takes the open file descriptor pointing to a Web UI file as an input and
  * calculates the checksum

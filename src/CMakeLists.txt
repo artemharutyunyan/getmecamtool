@@ -22,4 +22,7 @@ TARGET_LINK_LIBRARIES (uiextract ${CAMTOOL_LIBS})
 ADD_EXECUTABLE ( sysextract sysextract.c ) 
 TARGET_LINK_LIBRARIES (sysextract ${CAMTOOL_LIBS})
 
+# Confiuration extracting utility compilation
+ADD_EXECUTABLE ( confextract confextract.c ) 
+TARGET_LINK_LIBRARIES (confextract ${CAMTOOL_LIBS})
 

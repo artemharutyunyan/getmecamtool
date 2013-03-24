@@ -70,6 +70,20 @@ typedef struct webui_entry_t {
   char    data[MAX_FILE_SIZE];      /*!< File data */
 } webui_entry; 
 
+//! Configuration file header
+typedef struct conf_file_header_t {
+	int32_t         magic;	  /* !< Magic number */
+	int32_t         checksum;	/* !< something 1 */
+	int32_t         reserve2;	/* !< something 2 */
+  char            camid[16];/* !< camera id> */
+	int32_t         sysver;	  /* !< System firmware version */
+	int32_t         webuiver;	/* !< Web UI version */
+  char            alias[21]; /* !<Alias> */
+} conf_file_header;
+
+typedef struct conf_file_t {
+  conf_file_header header;
+} conf_file;
 // Function declarations
 int32_t calc_checksum_file(FILE*);
 int32_t calc_checksum_blob(const webui_data_blob*, const size_t); 

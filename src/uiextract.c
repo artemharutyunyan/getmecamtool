@@ -89,7 +89,7 @@ ui_check_version(FILE * f, webui_file_header * file_header)
 	return file_size;
 }
 int32_t
-ui_valid_header(FILE * f, webui_file_header * file_header)
+ui_validate_header(FILE * f, webui_file_header * file_header)
 {
 	int32_t         retval = 1;
 	int32_t         file_size = ui_check_version(f, file_header);
@@ -288,7 +288,7 @@ main(int argc, char **argv)
 		return 1;
 	}
 	webui_file_header file_header = { 0 };
-	if (!ui_valid_header(file, &file_header)) {
+	if (!ui_validate_header(file, &file_header)) {
 		return 1;
 	}
 	if (!validate_only) {

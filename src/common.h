@@ -67,8 +67,9 @@ typedef enum {
 
 typedef enum {
   CONF_OFFSET_USERS = 0,
-  CONF_OFFSET_PAST_USERS,
-  CONF_OFFSET_ADSL
+  CONF_OFFSET_NETWORK,
+  CONF_OFFSET_ADSL,
+  CONF_OFFSET_WIFI
 } conf_sections_offset_t;
 //Function definitions
 

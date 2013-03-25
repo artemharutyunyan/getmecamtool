@@ -87,6 +87,17 @@ typedef struct conf_user_t {
   char role;
 } conf_user;
 
+#pragma pack(push, 4)
+typedef struct conf_network_t {
+  int32_t ipaddr;
+  int32_t mask;
+  int32_t gateway;
+  int32_t dns;
+  int32_t unknown;
+  unsigned short port;
+} conf_network;
+#pragma pack(pop)
+
 typedef struct conf_adsl_t {
   char attr;
   char username[65];
@@ -97,7 +108,7 @@ typedef struct conf_adsl_t {
 typedef struct conf_file_t {
   conf_file_header header;
   conf_user users[8];
-  char  unknown[22]; // have not idea what is this, some constant values
+  conf_network network;
   conf_adsl adsl;
 
 

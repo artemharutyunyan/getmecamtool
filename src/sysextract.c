@@ -69,7 +69,7 @@ sys_read_header(FILE * f, const sys_header_offset_t type,
 	return retval;
 }
 int32_t
-sys_valid_header(FILE * f, sys_file_header * file_header)
+sys_validate_header(FILE * f, sys_file_header * file_header)
 {
 	fseek(f, 0, SEEK_END);
 	int32_t         file_size = ftell(f);
@@ -141,7 +141,7 @@ int32_t
 sys_extract_files(FILE * f, const char *dst_path)
 {
 	sys_file_header file_header = { 0 };
-	if (!sys_valid_header(f, &file_header)) {
+	if (!sys_validate_header(f, &file_header)) {
 		return 0;
 	}
 	char            dst_file[MAX_FILE_NAME_LEN];
@@ -216,7 +216,7 @@ main(int argc, char **argv)
 	}
 	if (validate_only) {
 		sys_file_header file_header = { 0 };
-		if (!sys_valid_header(file, &file_header)) {
+		if (!sys_validate_header(file, &file_header)) {
 			return 1;
 		}
 	} else {

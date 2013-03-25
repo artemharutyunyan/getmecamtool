@@ -31,8 +31,35 @@ usage()
 }
 
 int32_t
-conf_extract_conf(FILE * f, FILE * out_f)
+conf_extract_conf(conf_file *conf, FILE * f)
 {
+  // header
+  fprintf(f, "magic::::%#x\n", conf->header.magic); 
+  fprintf(f, "checksum::::%#x\n", conf->header.checksum); 
+  fprintf(f, "reserve::::%#x\n", conf->header.reserve); 
+  fprintf(f, "camid::::%s\n", conf->header.camid); 
+  fprintf(f, "system version::::%#x\n", conf->header.sysver); 
+  fprintf(f, "webui version::::%#x\n", conf->header.webuiver); 
+  fprintf(f, "alias::::%s\n", conf->header.alias); 
+
+  // users
+  int32_t i;
+  for(i = 0; i < 8; ++i) {
+    fprintf(f, "username::::%s\n", conf->users[i].username);
+    fprintf(f, "username::::%s\n", conf->users[i].password);
+    fprintf(f, "role::::%d\n", conf->users[i].role);
+  }
+  // network
+  fprintf(f, "ipaddr::::%d\n", conf->network.ipaddr);
+  fprintf(f, "mask::::%d\n", conf->network.mask);
+  fprintf(f, "dns::::%d\n", conf->network.dns);
+  fprintf(f, "unknown::::%d\n", conf->network.unknown);
+  fprintf(f, "port::::%d\n", conf->network.port);
+
+  // adsl
+  fprintf(f, "attr::::%d\n", conf->adsl.attr);
+  fprintf(f, "username::::%s\n", conf->adsl.username);
+  fprintf(f, "password::::%s\n", conf->adsl.password);
   return 1;
 }
 int32_t
@@ -107,15 +134,15 @@ conf_read_sections(FILE * f, const conf_sections_offset_t type,
 		retval = conf_read_users(f, conf);
 		// read users section
 		break;
-  case CONF_OFFSET_PAST_USERS:
-    if(fread(&conf->unknown, 1, 22, f) != 22) {
-      fprintf(stderr, "error reading data after users section\n.");
+  case CONF_OFFSET_NETWORK:
+    if(fread(&conf->network, 1, sizeof(struct conf_network_t), f) != sizeof(struct conf_network_t)) {
+      fprintf(stderr, "error reading network section\n.");
       return 0;
     }
     break;
   case CONF_OFFSET_ADSL:
     if(fread(&conf->adsl, 1, sizeof(conf_adsl), f) != sizeof(conf_adsl)) {
-      fprintf(stderr, "error reading ADSL conf section\n.");
+      fprintf(stderr, "error reading ADSL section\n.");
       return 0;
     }
     break;
@@ -126,10 +153,9 @@ conf_read_sections(FILE * f, const conf_sections_offset_t type,
   return retval; 
 }
 int32_t
-conf_valid_file(FILE * f, conf_file * conf)
+conf_validate_file(FILE * f, conf_file * conf)
 {
 	int32_t         retval = 1;
-	fseek(f, 0, SEEK_SET);
   if (!conf_read_header(f, CONF_OFFSET_MAGIC, &conf->header))
     return 0;
   if (!conf_read_header(f, CONF_OFFSET_CHECKSUM, &conf->header))
@@ -146,7 +172,7 @@ conf_valid_file(FILE * f, conf_file * conf)
     return 0;
   if(!conf_read_sections(f, CONF_OFFSET_USERS, conf))
     return 0;
-  if(!conf_read_sections(f, CONF_OFFSET_PAST_USERS, conf))
+  if(!conf_read_sections(f, CONF_OFFSET_NETWORK, conf))
     return 0;
   if(!conf_read_sections(f, CONF_OFFSET_ADSL, conf))
     return 0;
@@ -222,7 +248,7 @@ main(int argc, char **argv)
 		return 1;
 	}
 	conf_file conf = { 0 };
-	if (!conf_valid_file(file, &conf)) {
+	if (!conf_validate_file(file, &conf)) {
 		return 1;
 	}
 	if (!validate_only) {
@@ -231,10 +257,10 @@ main(int argc, char **argv)
       fprintf(stderr, "Unable to write file %s: %s\n",
           dst_file_name, strerror(errno));
       return 1;
-    } else {
+    } else { 
       fprintf(stdout, "Created output file %s\n", dst_file_name);
     }
-		conf_extract_conf(file, dst_file);
+		conf_extract_conf(&conf, dst_file);
     fclose(dst_file);
 	}
 	fclose(file);

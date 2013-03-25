@@ -112,7 +112,7 @@ ui_valid_header(FILE * f, webui_file_header * file_header)
 		}
 		if (!ui_read_header(f, UI_OFFSET_CHECKSUM, file_header))
 			return 0;
-		int32_t         checksum = calc_checksum_file(f);
+		int32_t         checksum = calc_checksum_file(f, ui_header_field[UI_OFFSET_VERSION_v2]);
 		if (file_header->checksum != checksum) {
 			fprintf(stderr,
 				"Declared checksum doesn't match the calculated checksum: %#x/%#x\n",

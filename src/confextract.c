@@ -46,13 +46,13 @@ conf_read_header(FILE * f, const conf_header_offset_t type,
 		fread(&file_header->magic, 1, 4, f);
 		// magic number
 		break;
-	case CONF_OFFSET_RESERVE1:
+	case CONF_OFFSET_CHECKSUM:
 		fread(&file_header->checksum, 1, 4, f);
 		// declared checksum
 		break;
-	case CONF_OFFSET_RESERVE2:
-		fread(&file_header->checksum, 1, 4, f);
-		// declared checksum
+	case CONF_OFFSET_RESERVE:
+		fread(&file_header->reserve, 1, 4, f);
+		// don't know what is this constant value
 		break;
 	case CONF_OFFSET_CAMID:
 		fread(&file_header->camid, 1, 13, f);
@@ -83,15 +83,58 @@ conf_read_header(FILE * f, const conf_header_offset_t type,
 }
 
 int32_t
+conf_read_users(FILE * f, conf_file * conf)
+{
+  int32_t retval = 1;
+  int32_t i;
+  for(i = 0; i < 8; ++i) {
+    if(fread(&conf->users[i], 1, sizeof(conf_user), f) != sizeof(conf_user)){
+      fprintf(stderr, "error reading users section\n.");
+      return 0;
+    }
+  }
+  return retval;
+}
+
+int32_t
+conf_read_sections(FILE * f, const conf_sections_offset_t type,
+	       conf_file * conf)
+{
+	int32_t         retval = 1;
+  fseek(f, conf_sections_field[type], SEEK_SET);
+	switch (type) {
+	case CONF_OFFSET_MAGIC:
+		retval = conf_read_users(f, conf);
+		// read users section
+		break;
+  case CONF_OFFSET_PAST_USERS:
+    if(fread(&conf->unknown, 1, 22, f) != 22) {
+      fprintf(stderr, "error reading data after users section\n.");
+      return 0;
+    }
+    break;
+  case CONF_OFFSET_ADSL:
+    if(fread(&conf->adsl, 1, sizeof(conf_adsl), f) != sizeof(conf_adsl)) {
+      fprintf(stderr, "error reading ADSL conf section\n.");
+      return 0;
+    }
+    break;
+  default:
+    retval = 0;
+    break;
+  }
+  return retval; 
+}
+int32_t
 conf_valid_file(FILE * f, conf_file * conf)
 {
 	int32_t         retval = 1;
 	fseek(f, 0, SEEK_SET);
   if (!conf_read_header(f, CONF_OFFSET_MAGIC, &conf->header))
     return 0;
-  if (!conf_read_header(f, CONF_OFFSET_RESERVE1, &conf->header))
+  if (!conf_read_header(f, CONF_OFFSET_CHECKSUM, &conf->header))
     return 0;
-  if (!conf_read_header(f, CONF_OFFSET_RESERVE2, &conf->header))
+  if (!conf_read_header(f, CONF_OFFSET_RESERVE, &conf->header))
     return 0;
   if (!conf_read_header(f, CONF_OFFSET_CAMID, &conf->header))
     return 0;
@@ -101,7 +144,27 @@ conf_valid_file(FILE * f, conf_file * conf)
     return 0;
   if (!conf_read_header(f, CONF_OFFSET_ALIAS, &conf->header))
     return 0;
-  return 1;
+  if(!conf_read_sections(f, CONF_OFFSET_USERS, conf))
+    return 0;
+  if(!conf_read_sections(f, CONF_OFFSET_PAST_USERS, conf))
+    return 0;
+  if(!conf_read_sections(f, CONF_OFFSET_ADSL, conf))
+    return 0;
+
+  if(conf->header.magic != CONF_MAGIC) {
+    fprintf(stderr,
+        "Declared file magic number doesn't match the known number: %#x/%#x\n",
+        conf->header.magic, CONF_MAGIC);
+    retval = 0;
+  }
+  int32_t         checksum = calc_checksum_file(f, conf_header_field[CONF_OFFSET_CAMID]);
+  if(conf->header.checksum != checksum) {
+    fprintf(stderr,
+        "Declared checksum doesn't match the calculated checksum: %#x/%#x\n",
+        conf->header.checksum, checksum);
+    retval = 0;
+  }
+  return retval;
 }
 int32_t
 main(int argc, char **argv)

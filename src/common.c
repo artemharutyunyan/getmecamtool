@@ -41,6 +41,13 @@ const int32_t   conf_header_field[] = {
   0x21
 };
 
+// when change, update conf_sections_offset_t too
+const int32_t   conf_sections_field[] = {
+	0x36, // offset to the start of users section
+  0x10E,
+  0x124,
+  0x1A7
+};
 
 /*
  * ! Takes the open file descriptor pointing to a Web UI file as an input and
@@ -50,9 +57,9 @@ const int32_t   conf_header_field[] = {
  * follow file header)
  */
 int32_t
-calc_checksum_file(FILE * f)
+calc_checksum_file(FILE * f, int32_t offset)
 {
-	fseek(f, ui_header_field[UI_OFFSET_VERSION_v2], SEEK_SET);
+	fseek(f, offset, SEEK_SET);
 	int32_t         sum = 0;
 	unsigned char   buf;
 

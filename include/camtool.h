@@ -73,19 +73,37 @@ typedef struct webui_entry_t {
 //! Configuration file header
 typedef struct conf_file_header_t {
 	int32_t         magic;	  /* !< Magic number */
-	int32_t         checksum;	/* !< something 1 */
-	int32_t         reserve2;	/* !< something 2 */
+	int32_t         checksum;	/* !< checksum */
+	int32_t         reserve;	/* !< something 2 */
   char            camid[16];/* !< camera id> */
 	int32_t         sysver;	  /* !< System firmware version */
 	int32_t         webuiver;	/* !< Web UI version */
   char            alias[21]; /* !<Alias> */
 } conf_file_header;
 
+typedef struct conf_user_t {
+  char username[13];
+  char password[13];
+  char role;
+} conf_user;
+
+typedef struct conf_adsl_t {
+  char attr;
+  char username[65];
+  char password[65];
+
+} conf_adsl;
+
 typedef struct conf_file_t {
   conf_file_header header;
+  conf_user users[8];
+  char  unknown[22]; // have not idea what is this, some constant values
+  conf_adsl adsl;
+
+
 } conf_file;
 // Function declarations
-int32_t calc_checksum_file(FILE*);
+int32_t calc_checksum_file(FILE*, int32_t);
 int32_t calc_checksum_blob(const webui_data_blob*, const size_t); 
 
 #endif				/* // __CAMTOOL_H_ */

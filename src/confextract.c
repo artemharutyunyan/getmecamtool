@@ -52,6 +52,7 @@ conf_extract_conf(conf_file *conf, FILE * f)
   // network
   fprintf(f, "ipaddr::::%d\n", conf->network.ipaddr);
   fprintf(f, "mask::::%d\n", conf->network.mask);
+  fprintf(f, "gateway::::%d\n", conf->network.gateway);
   fprintf(f, "dns::::%d\n", conf->network.dns);
   fprintf(f, "unknown::::%d\n", conf->network.unknown);
   fprintf(f, "port::::%d\n", conf->network.port);

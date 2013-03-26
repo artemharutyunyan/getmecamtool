@@ -46,7 +46,7 @@ conf_extract_conf(conf_file *conf, FILE * f)
   int32_t i;
   for(i = 0; i < 8; ++i) {
     fprintf(f, "username::::%s\n", conf->users[i].username);
-    fprintf(f, "username::::%s\n", conf->users[i].password);
+    fprintf(f, "password::::%s\n", conf->users[i].password);
     fprintf(f, "role::::%d\n", conf->users[i].role);
   }
   // network

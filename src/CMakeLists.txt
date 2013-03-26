@@ -26,3 +26,7 @@ TARGET_LINK_LIBRARIES (sysextract ${CAMTOOL_LIBS})
 ADD_EXECUTABLE ( confextract confextract.c ) 
 TARGET_LINK_LIBRARIES (confextract ${CAMTOOL_LIBS})
 
+# Confiuration packing utility compilation
+ADD_EXECUTABLE ( confpack confpack.c ) 
+TARGET_LINK_LIBRARIES (confpack ${CAMTOOL_LIBS})
+

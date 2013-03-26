@@ -16,7 +16,6 @@
 
 static FILE* sys_fopen_read(const char* fname, uint32_t* s);
 static int sys_create_file (const char* kernel, const char* romfs, const char* out); 
-static int sys_copy_file(FILE* src, FILE* dst, const uint32_t size); 
 
 static void 
 usage()
@@ -128,7 +127,7 @@ sys_create_file (const char* kernel, const char* romfs, const char* out)
   }
 
   // Copy kernel to the output file 
-  if (sys_copy_file(kernel_fd, out_fd, kernel_size) != 0) {
+  if (copy_file(kernel_fd, out_fd, kernel_size) != 0) {
     fclose(out_fd);
     fclose(kernel_fd);
     return 1;
@@ -145,7 +144,7 @@ sys_create_file (const char* kernel, const char* romfs, const char* out)
   }
   
   // Copy romfs to the output file 
-  if (sys_copy_file(romfs_fd, out_fd, romfs_size) != 0) {
+  if (copy_file(romfs_fd, out_fd, romfs_size) != 0) {
     fclose(out_fd);
     fclose(romfs_fd);
     return 1;
@@ -209,32 +208,5 @@ sys_fopen_read(const char* fname, uint32_t* s)
   rewind(fd);
   *s = size; 
   return fd;
-}
-
-/// \brief Given two file handles copies the contents of one file to another 
-int 
-sys_copy_file(FILE* src, FILE* dst, const uint32_t size) 
-{
-  // Read contents of a file 
-  char buf[MAX_FILE_SIZE];
-  uint32_t n;
-  n = fread(buf, 1, size, src);
-  if (n != size) {
-    fprintf(stderr, "Could not copy a file. Read only %d out of %d bytes",
-            n,
-            size);
-    return 1;
-  }
-  
-  // Write contents of a file 
-  n = fwrite(buf, 1, size, dst);
-  if (n != size) {
-    fprintf(stderr, "Could not write to a file. Wrote only %d bytes out of %d",
-            n,
-            size);
-    return 1;
-  }
-
-  return 0;
 }
 

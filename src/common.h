@@ -71,6 +71,10 @@ typedef enum {
   CONF_OFFSET_ADSL,
   CONF_OFFSET_WIFI
 } conf_sections_offset_t;
+
 //Function definitions
+int32_t calc_checksum_file(FILE* f, const size_t offset);
+int32_t calc_checksum_blob(const webui_data_blob* blob, const size_t offset);
+int32_t copy_file(FILE* src, FILE* dst, const uint32_t size);
 
 #endif				/* // __COMMON_H */

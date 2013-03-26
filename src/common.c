@@ -49,15 +49,15 @@ const int32_t   conf_sections_field[] = {
   0x1A7 // wifi
 };
 
-/*
- * ! Takes the open file descriptor pointing to a Web UI file as an input and
+/* Takes the open file descriptor pointing to a Web UI file as an input and
  * calculates the checksum
  * 
- * \param f open file descriptor \return The checksum (sum of all the bytes that
- * follow file header)
+ * \param[in] f open file descriptor 
+ * \param[in] offset offset to calculate checksum from 
+ * \return The checksum (sum of all the bytes that follow file header)
  */
 int32_t
-calc_checksum_file(FILE * f, int32_t offset)
+calc_checksum_file(FILE* f, const size_t offset)
 {
 	fseek(f, offset, SEEK_SET);
 	int32_t         sum = 0;
@@ -73,13 +73,15 @@ calc_checksum_file(FILE * f, int32_t offset)
 	return sum;
 }
 
-/*! Takes a webui_data_blob populated with the Web UI data as an input
-    and calculates the checksum 
-
-    \param blob the blob containing Web UI data 
-    \return The checksum (sum of all the bytes that follow file header)
-*/ 
-int32_t calc_checksum_blob (const webui_data_blob* blob, const size_t offset)
+/* Takes a webui_data_blob populated with the Web UI data as an input
+ * and calculates the checksum 
+ *
+ * \param[in] blob the blob containing Web UI data 
+ * \param[in] offset offset to calculate checksum from 
+ * \return The checksum (sum of all the bytes that follow file header)
+ */ 
+int32_t 
+calc_checksum_blob(const webui_data_blob* blob, const size_t offset)
 {
   int32_t sum = 0;
   size_t i = offset;
@@ -91,3 +93,37 @@ int32_t calc_checksum_blob (const webui_data_blob* blob, const size_t offset)
 
 	return sum;
 }
+
+/* Given two file handles copies the contents of one file to another
+ * 
+ * \param[in] src source file handle 
+ * \param[in] dst destination file handle 
+ * \param[in] size size of the file to copy  
+ * \return 0 in case of success 1 otherwise 
+ */
+int32_t 
+copy_file(FILE* src, FILE* dst, const uint32_t size) 
+{
+  // Read contents of a file 
+  char buf[MAX_FILE_SIZE];
+  uint32_t n;
+  n = fread(buf, 1, size, src);
+  if (n != size) {
+    fprintf(stderr, "Could not copy a file. Read only %d out of %d bytes",
+            n,  
+            size);
+    return 1;
+  }
+  
+  // Write contents of a file 
+  n = fwrite(buf, 1, size, dst);
+  if (n != size) {
+    fprintf(stderr, "Could not write to a file. Wrote only %d bytes out of %d",
+            n,  
+            size);
+    return 1;
+  }
+
+  return 0;
+}
+

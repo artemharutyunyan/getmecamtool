@@ -12,6 +12,9 @@
 // Constant definitions
 #define MAX_PATH_LEN 1024
 #define MAX_FILE_NAME_LEN 1024
+#define MAX_SETTING_LINE_LEN 1024
+#define SETTING_FILE_DELIM ':'
+#define SETTING_FILE_DELIM_COUNT 4
 
 #define MAX_FILE_SIZE 1048576
 
@@ -110,11 +113,7 @@ typedef struct conf_file_t {
   conf_user users[8];
   conf_network network;
   conf_adsl adsl;
-
-
 } conf_file;
-// Function declarations
-int32_t calc_checksum_file(FILE*, int32_t);
-int32_t calc_checksum_blob(const webui_data_blob*, const size_t); 
 
 #endif				/* // __CAMTOOL_H_ */
+

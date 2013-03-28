@@ -1,0 +1,85 @@
+#!/bin/bash 
+
+checkenv()
+{
+  CURL=$(which curl)
+  [[ -z $CURL ]] && die "curl not found in \$PATH"
+}
+
+die()
+{
+  echo $1
+  exit 1
+}
+
+
+# Make sure all the necessary tools are available 
+checkenv
+
+# Load all the commands 
+for cmd in commands/*.sh; do
+    . $cmd 
+done
+
+usage()
+{
+cat << EOF
+A script for demonstrating the work of camtool utilities 
+Usage: $0 -c <cmd> [OPTIONS] 
+OPTIONS:
+    -c <cmd> command (availble commands are ${CMD_LIST[*]})
+    -a <addr> address of the camera 
+    -u <username> username for accessing the camera
+    -p <password> password for accessing the camera  
+    -h display this message
+EOF
+}
+
+ADDR=
+USERNAME=
+PASSWORD=
+CMD=
+
+while getopts “hu:p:a:c:” OPTION
+do
+     case $OPTION in
+         h)
+            usage
+            exit 1
+            ;;
+         a)
+            ADDR=$OPTARG
+            ;;
+         u)
+            USERNAME=$OPTARG  
+            ;;
+         c)
+            CMD=$OPTARG
+            ;;
+         p)
+            PASSWORD=$OPTARG
+            ;;
+         ?)
+            usage
+            exit
+            ;;
+     esac
+done
+
+if [[ -z $CMD ]]; then
+  usage
+  exit 1
+fi
+
+
+for item in ${CMD_LIST[*]}; do
+    
+    if [[ "$item" == $CMD ]]; then
+        run_$CMD
+        RET=$(run_$CMD)
+        exit 0
+    fi
+done
+
+die "Unknown command '$CMD'"
+

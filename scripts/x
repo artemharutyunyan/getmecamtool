@@ -22,6 +22,7 @@ OPTIONS:
     -a <addr> address of the camera 
     -u <username> username for accessing the camera
     -p <password> password for accessing the camera  
+    -e <exec> path to executable file for injecting to the camera
     -h display this message
 EOF
 }
@@ -31,12 +32,15 @@ ADDR=
 USERNAME=
 PASSWORD=
 CMD=
-SUFFIX=$(mktemp .XXXX)
+EXEC=
+SYS_FW_LIB=
+WEBUI_LIB=
+SUFFIX=$(mktemp .XXXXXXXXXX)
 SETTINGS_FILE=/tmp/settings$SUFFIX
 EXT_SETTINGS_FILE=/tmp/ext_settings$SUFFIX
 NEW_SETTINGS_FILE=/tmp/new_settings$SUFFIX
 
-while getopts “hu:p:a:c:” OPTION
+while getopts “hu:p:a:c:e:s:” OPTION
 do
      case $OPTION in
          h)
@@ -55,6 +59,12 @@ do
          p)
             PASSWORD=$OPTARG
             ;;
+         e)
+             EXEC=$OPTARG
+             ;;
+         s)
+             SYS_FW_LIB=$OPTARG
+             ;;
          ?)
             usage
             exit
@@ -78,6 +88,8 @@ done
 
 run_get_settings
 run_new_settings
+get_sys_version
+
 
 die "Unknown command '$CMD'"
 

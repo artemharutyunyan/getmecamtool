@@ -183,11 +183,11 @@ conf_update_checksum(FILE* out)
 static int
 conf_update_port(FILE* out, const char* port_str) {
 
-  // Make sure port number is sane  
+  // Make sure port number is sane 
   int port = atoi(port_str);
-  if (port <= 0 || port > (1 << 16 - 1)) {
-    fprintf(stderr, "Failed to convert port value (%s) to a valid port number.\n", 
-            port_str);
+  if (port <= 0 || (port > (1 << 16) - 1)) {
+    fprintf(stderr, "Failed to convert port value (%s %d) to a valid port number.\n", 
+            port_str, port);
     return 1; 
   }
 

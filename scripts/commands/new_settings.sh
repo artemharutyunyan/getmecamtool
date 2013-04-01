@@ -37,7 +37,6 @@ run_new_settings()
     then
         die "Could not verify new settings file ($NEW_SETTINGS_FILE). Aborting run_new_settings()"
     fi
-    echo it works
 }
 
 

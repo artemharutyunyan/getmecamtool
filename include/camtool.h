@@ -84,11 +84,13 @@ typedef struct conf_file_header_t {
   char            alias[21]; /* !<Alias> */
 } conf_file_header;
 
+#pragma pack(push, 1)
 typedef struct conf_user_t {
   char username[13];
   char password[13];
   char role;
 } conf_user;
+#pragma pack(pop)
 
 #pragma pack(push, 4)
 typedef struct conf_network_t {
@@ -101,13 +103,15 @@ typedef struct conf_network_t {
 } conf_network;
 #pragma pack(pop)
 
+#pragma pack(push, 4)
 typedef struct conf_adsl_t {
   char attr;
   char username[65];
   char password[65];
-
 } conf_adsl;
+#pragma pack(pop)
 
+#pragma pack(push, 4)
 typedef struct conf_wifi_t {
   char enable;
   char ssid[41];
@@ -115,6 +119,7 @@ typedef struct conf_wifi_t {
   char wpa_psk[65];
   char country;
 } conf_wifi;
+#pragma pack(pop)
 
 #pragma pack(push, 1)
 typedef struct conf_email_t {

@@ -124,7 +124,7 @@ typedef struct conf_email_t {
   char receiver3[65];
   char receiver4[65];
   char mail_server[65];
-  char port[2];
+  uint16_t port;
   char username[65];
   char password[65];
 } conf_email;

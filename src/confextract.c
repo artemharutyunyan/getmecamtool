@@ -67,7 +67,6 @@ conf_extract_conf(conf_file *conf, FILE * f)
   fprintf(f, "wifi_ssid::::%s\n", conf->wifi.ssid);
   fprintf(f, "wifi_wpa_psk::::%s\n", conf->wifi.wpa_psk);
   fprintf(f, "wifi_country::::%d\n", conf->wifi.country & 1);
-short a = (short)conf->email.port;
   // e-mail
   fprintf(f, "email_notify_ip_change::::%d\n", conf->email.mail_inet_ip & 1);
   fprintf(f, "email_sender::::%s\n", conf->email.sender);
@@ -76,7 +75,7 @@ short a = (short)conf->email.port;
   fprintf(f, "email_receiver3::::%s\n", conf->email.receiver3);
   fprintf(f, "email_receiver4::::%s\n", conf->email.receiver4);
   fprintf(f, "email_server::::%s\n", conf->email.mail_server);
-  fprintf(f, "email_port::::%hd\n", a);
+  fprintf(f, "email_port::::%hd\n", conf->email.port);
   fprintf(f, "email_username::::%s\n", conf->email.username);
   fprintf(f, "email_password::::%s\n", conf->email.password);
   

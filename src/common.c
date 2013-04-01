@@ -43,10 +43,12 @@ const int32_t   conf_header_field[] = {
 
 // when change, update conf_sections_offset_t too
 const int32_t   conf_sections_field[] = {
-	0x36, // users section
-  0x10E, // network
-  0x124, // adsl
-  0x1A7 // wifi
+	0x36,   // users section
+  0x10E,  // network
+  0x124,  // adsl
+  0x1A7,  // wifi
+  0x293,   // ntp
+  0x518   // e-mail
 };
 
 /* Takes the open file descriptor pointing to a Web UI file as an input and

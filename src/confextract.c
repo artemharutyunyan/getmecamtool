@@ -45,9 +45,9 @@ conf_extract_conf(conf_file *conf, FILE * f)
   // users
   int32_t i;
   for(i = 0; i < 8; ++i) {
-    fprintf(f, "username::::%s\n", conf->users[i].username);
-    fprintf(f, "password::::%s\n", conf->users[i].password);
-    fprintf(f, "role::::%d\n", conf->users[i].role);
+    fprintf(f, "username%d::::%s\n", i + 1,  conf->users[i].username);
+    fprintf(f, "password%d::::%s\n", i + 1, conf->users[i].password);
+    fprintf(f, "role%d::::%d\n", i + 1, conf->users[i].role);
   }
   // network
   fprintf(f, "ipaddr::::%d\n", conf->network.ipaddr);
@@ -59,8 +59,27 @@ conf_extract_conf(conf_file *conf, FILE * f)
 
   // adsl
   fprintf(f, "attr::::%d\n", conf->adsl.attr);
-  fprintf(f, "username::::%s\n", conf->adsl.username);
-  fprintf(f, "password::::%s\n", conf->adsl.password);
+  fprintf(f, "adsl_username::::%s\n", conf->adsl.username);
+  fprintf(f, "adsl_password::::%s\n", conf->adsl.password);
+
+  // wifi
+  fprintf(f, "wifi_enable::::%d\n", conf->wifi.enable & 1);
+  fprintf(f, "wifi_ssid::::%s\n", conf->wifi.ssid);
+  fprintf(f, "wifi_wpa_psk::::%s\n", conf->wifi.wpa_psk);
+  fprintf(f, "wifi_country::::%d\n", conf->wifi.country & 1);
+short a = (short)conf->email.port;
+  // e-mail
+  fprintf(f, "email_notify_ip_change::::%d\n", conf->email.mail_inet_ip & 1);
+  fprintf(f, "email_sender::::%s\n", conf->email.sender);
+  fprintf(f, "email_receiver1::::%s\n", conf->email.receiver1);
+  fprintf(f, "email_receiver2::::%s\n", conf->email.receiver2);
+  fprintf(f, "email_receiver3::::%s\n", conf->email.receiver3);
+  fprintf(f, "email_receiver4::::%s\n", conf->email.receiver4);
+  fprintf(f, "email_server::::%s\n", conf->email.mail_server);
+  fprintf(f, "email_port::::%hd\n", a);
+  fprintf(f, "email_username::::%s\n", conf->email.username);
+  fprintf(f, "email_password::::%s\n", conf->email.password);
+  
   return 1;
 }
 int32_t
@@ -147,6 +166,18 @@ conf_read_sections(FILE * f, const conf_sections_offset_t type,
       return 0;
     }
     break;
+  case CONF_OFFSET_WIFI:
+    if(fread(&conf->wifi, 1, sizeof(conf_wifi), f) != sizeof(conf_wifi)) {
+      fprintf(stderr, "error reading WIFI section\n.");
+      return 0;
+    }
+    break;
+  case CONF_OFFSET_EMAIL:
+    if(fread(&conf->email, 1, sizeof(conf_email), f) != sizeof(conf_email)) {
+      fprintf(stderr, "error reading e-mail section\n.");
+      return 0;
+    }
+    break;
   default:
     retval = 0;
     break;
@@ -176,6 +207,10 @@ conf_validate_file(FILE * f, conf_file * conf)
   if(!conf_read_sections(f, CONF_OFFSET_NETWORK, conf))
     return 0;
   if(!conf_read_sections(f, CONF_OFFSET_ADSL, conf))
+    return 0;
+  if(!conf_read_sections(f, CONF_OFFSET_WIFI, conf))
+    return 0;
+if(!conf_read_sections(f, CONF_OFFSET_EMAIL, conf))
     return 0;
 
   if(conf->header.magic != CONF_MAGIC) {
@@ -265,6 +300,24 @@ main(int argc, char **argv)
     fclose(dst_file);
 	}
 	fclose(file);
+  fprintf(stdout,
+		"\nIntegrity check passed:\n"
+		"Magic number \t%#x\n"
+    "Checksum     \t%#x\n"
+    "Camera ID    \t%s\n"
+    "Sys version  \t%d.%d.%d.%d\n"
+    "WebUI version\t%d.%d.%d.%d\n"
+    "Alias        \t%s\n" , conf.header.magic,
+    conf.header.checksum,
+		conf.header.camid, (conf.header.sysver >> (0 * 8)) & 0xFF,
+		(conf.header.sysver >> (1 * 8)) & 0xFF,
+		(conf.header.sysver >> (2 * 8)) & 0xFF,
+		(conf.header.sysver >> (3 * 8)) & 0xFF,
+    (conf.header.webuiver >> (0 * 8)) & 0xFF,
+		(conf.header.webuiver >> (1 * 8)) & 0xFF,
+		(conf.header.webuiver >> (2 * 8)) & 0xFF,
+		(conf.header.webuiver >> (3 * 8)) & 0xFF,
+    conf.header.alias);
 	return 0;
 }
 

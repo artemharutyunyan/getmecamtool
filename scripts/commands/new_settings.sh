@@ -1,7 +1,5 @@
 #!/bin/bash 
 
-echo sourcing new_settings
-
 validate_new_settings()
 {
     if [[ -z $SETTINGS_FILE ]] || [[ ! -f $SETTINGS_FILE ]]

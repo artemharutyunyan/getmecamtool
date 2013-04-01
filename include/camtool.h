@@ -108,11 +108,34 @@ typedef struct conf_adsl_t {
 
 } conf_adsl;
 
+typedef struct conf_wifi_t {
+  char enable;
+  char ssid[41];
+  char something[129];
+  char wpa_psk[65];
+  char country;
+} conf_wifi;
+
+typedef struct conf_email_t {
+  char mail_inet_ip;
+  char sender[65];
+  char receiver1[65];
+  char receiver2[65];
+  char receiver3[65];
+  char receiver4[65];
+  char mail_server[65];
+  uint16_t port;
+  char username[65];
+  char password[65];
+} conf_email;
+
 typedef struct conf_file_t {
   conf_file_header header;
   conf_user users[8];
   conf_network network;
   conf_adsl adsl;
+  conf_wifi wifi;
+  conf_email email;
 } conf_file;
 
 #endif				/* // __CAMTOOL_H_ */

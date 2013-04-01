@@ -1,10 +1,6 @@
 #!/bin/bash 
 
-die()
-{
-  echo $1 1>&2
-  exit 1
-}
+set +e
 
 # Load all the commands 
 for cmd in commands/*.sh; do
@@ -22,6 +18,7 @@ OPTIONS:
     -a <addr> address of the camera 
     -u <username> username for accessing the camera
     -p <password> password for accessing the camera  
+    -e <exec> path to executable file for injecting to the camera
     -h display this message
 EOF
 }
@@ -31,12 +28,15 @@ ADDR=
 USERNAME=
 PASSWORD=
 CMD=
-SUFFIX=$(mktemp .XXXX)
+EXEC=
+SYS_FW_LIB=
+WEBUI_LIB=
+SUFFIX=$(mktemp -u .XXXXXXXXXX)
 SETTINGS_FILE=/tmp/settings$SUFFIX
 EXT_SETTINGS_FILE=/tmp/ext_settings$SUFFIX
 NEW_SETTINGS_FILE=/tmp/new_settings$SUFFIX
 
-while getopts “hu:p:a:c:” OPTION
+while getopts “hu:p:a:c:e:s:” OPTION
 do
      case $OPTION in
          h)
@@ -55,6 +55,12 @@ do
          p)
             PASSWORD=$OPTARG
             ;;
+         e)
+             EXEC=$OPTARG
+             ;;
+         s)
+             SYS_FW_LIB=$OPTARG
+             ;;
          ?)
             usage
             exit
@@ -71,13 +77,8 @@ fi
 for item in ${CMD_LIST[*]}; do    
     if [[ "$item" == $CMD ]]; then
         run_$CMD
-        RET=$(run_$CMD)
         exit 0
     fi
 done
-
-run_get_settings
-run_new_settings
-
 die "Unknown command '$CMD'"
 

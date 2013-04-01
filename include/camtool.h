@@ -116,6 +116,7 @@ typedef struct conf_wifi_t {
   char country;
 } conf_wifi;
 
+#pragma pack(push, 1)
 typedef struct conf_email_t {
   char mail_inet_ip;
   char sender[65];
@@ -128,6 +129,7 @@ typedef struct conf_email_t {
   char username[65];
   char password[65];
 } conf_email;
+#pragma pack(pop)
 
 typedef struct conf_file_t {
   conf_file_header header;

@@ -37,13 +37,13 @@ typedef struct xfer_buf{
   char buf[1460];
   int len;
 } xfer_buf_t;
-pair_t pairs[MAX_CLIENTS + 1];// = {-1};
-xfer_buf_t mainbuf;// = {0};
+pair_t pairs[MAX_CLIENTS + 1] = {-1};
+xfer_buf_t mainbuf = {0};
 char verb[32] = {0};
 char dest_host[255] = {0};
 char  dest_port_str[6] = {0};
 int dest_port = 0;
-const char localhost[] = "127.0.0.1";
+const char localhost[] = "0.0.0.0";
 const char reply200[] = "HTTP/1.1 200 Connection established\r\n\r\n";
 const char reply503[] = "HTTP/1.1 503 Service Unavailable\r\n\r\n";
 #define IN 1
@@ -157,8 +157,8 @@ int main(int argc, char **argv)
     PAIR_ST(tmp) = INIT;
   }
 
-  memset (pairs, -1, sizeof(pairs) * (MAX_CLIENTS + 1));
-  memset(&mainbuf, 0, sizeof(mainbuf));
+  //memset (pairs, -1, sizeof(pairs) * (MAX_CLIENTS + 1));
+  //memset(&mainbuf, 0, sizeof(mainbuf));
 
   pairs[0].ifd = socket(AF_INET, SOCK_STREAM, 0);
 

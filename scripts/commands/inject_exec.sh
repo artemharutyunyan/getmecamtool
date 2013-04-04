@@ -29,6 +29,7 @@ validate_inject_exec()
     validate_genromfs
     validate_sysextract
     validate_syspack
+    validate_lib
     get_sys_version
 
     if [[ -z $EXEC ]] || [[ ! -f $EXEC ]]
@@ -36,10 +37,6 @@ validate_inject_exec()
         die "Executable file must be provided (and must exist $EXEC) as an argument to inject_exec command."
     fi
 
-    if [[ -z $SYS_FW_LIB ]] || [[ ! -d $SYS_FW_LIB ]]
-    then
-        die "System firmware library directory must be provided (and must exist $SYS_FW_LIB) as an argument to inject_exec command."
-    fi
 }
 
 run_inject_exec()
@@ -47,7 +44,7 @@ run_inject_exec()
     validate_inject_exec    
 
     # Locate sys firmware 
-    SYS_FW_FILE=$SYS_FW_LIB/$SYSTEM_VERSION/lr_cmos_$SYSTEM_VERSION.bin
+    SYS_FW_FILE=$SYS_FW_LIB/sys/$SYSTEM_VERSION/lr_cmos_$SYSTEM_VERSION.bin
     [[ -f $SYS_FW_FILE ]] || die "$SYS_FW_FILE does not exist. Aborting run_inject_exec"
     green "Found matching system firmware in the library"
 
@@ -75,7 +72,7 @@ run_inject_exec()
     # Copy executable file over and add to init
     cp $EXEC $TMP_SYS_FW_DIR/rom-rw/bin
     EXEC_BASENAME=$(basename $EXEC)
-    sed -i 's/camera\&/camera\&\n'$EXEC_BASENAME'\&/' $TMP_SYS_FW_DIR/rom-rw/bin/init
+    sed -i 's/camera\&/camera\&\n'$EXEC_BASENAME' 8888 \&/' $TMP_SYS_FW_DIR/rom-rw/bin/init
     green "Injected the binary $EXEC into the ROM-FS"
 
     # Genromfs
@@ -91,7 +88,7 @@ run_inject_exec()
     [[ $? == 0 ]] || die "Could not verify integrity of $NEW_FW_FILE"
     echo
     green "Created new firmware image ($NEW_FW_FILE)"
-
+   
     echo "Trying to upload system firmware to $ADDR"
     # Upload file to the camera
     CODE=$($CURL -s -o /dev/null -w "%{http_code}" \

@@ -43,7 +43,7 @@ char verb[32] = {0};
 char dest_host[255] = {0};
 char  dest_port_str[6] = {0};
 int dest_port = 0;
-const char localhost[] = "localhost";
+const char localhost[] = "127.0.0.1";
 const char reply200[] = "HTTP/1.1 200 Connection established\r\n\r\n";
 const char reply503[] = "HTTP/1.1 503 Service Unavailable\r\n\r\n";
 #define IN 1
@@ -150,7 +150,7 @@ int main(int argc, char **argv)
   struct sockaddr_in  client_addr;
   socklen_t client_len = sizeof(client_addr);
 
-  if(argc < 2)
+  if(argc < 3)
     return 1;
   for(tmp=0;tmp<MAX_CLIENTS+1;tmp++){
     SET_PAIR_FD(IN,tmp,-1);
@@ -164,6 +164,7 @@ int main(int argc, char **argv)
     return 1;
   }
   unsigned short port = atoi(argv[1]);
+  unsigned short local_port = atoi(argv[2]);
   struct sockaddr_in server;
   server.sin_family = PF_INET;
   server.sin_addr.s_addr = INADDR_ANY;
@@ -224,7 +225,7 @@ int main(int argc, char **argv)
                     dest_port = atoi(dest_port_str);
                   } else {
                     strncpy(dest_host, localhost, sizeof(localhost));
-                    dest_port = 80;
+                    dest_port = local_port;
                   }
                   struct sockaddr_in server;
                   struct hostent * hp;

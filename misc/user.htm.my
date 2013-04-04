@@ -1,0 +1,206 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" href="style.css" type="text/css">
+<title></title>
+<style>
+BODY {
+	MARGIN: 0px; BACKGROUND-COLOR: #848284;  font: arial;
+}
+</style>
+</head>
+<script language="javascript">
+    document.write('<script src="get_params.cgi?user='+top.user+'&pwd='+top.pwd+'"><\/script>');
+</script>
+<script>
+if (alias=='') alias=top.str_anonymous;
+top.alias=alias;
+top.document.title=top.str_device+'('+alias+')';
+function body_onload()
+{
+    if(top.browser == 0)
+    {
+        path_table.style.display='';
+    }
+    else
+    {
+        path_table.style.display='none';
+    }
+	user1.value=user1_name;
+	pwd1.value=user1_pwd;	
+	pri1.selectedIndex=user1_pri;
+	user2.value=user2_name;
+	pwd2.value=user2_pwd;	
+	pri2.selectedIndex=user2_pri;
+	user3.value=user3_name;
+	pwd3.value=user3_pwd;	
+	pri3.selectedIndex=user3_pri;
+	user4.value=user4_name;
+	pwd4.value=user4_pwd;	
+	pri4.selectedIndex=user4_pri;
+	user5.value=user5_name;
+	pwd5.value=user5_pwd;	
+	pri5.selectedIndex=user5_pri;
+	user6.value=user6_name;
+	pwd6.value=user6_pwd;	
+	pri6.selectedIndex=user6_pri;
+	user7.value=user7_name;
+	pwd7.value=user7_pwd;	
+	pri7.selectedIndex=user7_pri;
+	user8.value=user8_name;
+	pwd8.value=user8_pwd;	
+	pri8.selectedIndex=user8_pri;
+}
+function set_users()
+{
+	parent.content.reboot_seconds=30;
+	url='set_users.cgi?user='+top.user+'&pwd='+top.pwd+'&next_url=rebootme.htm&user1='+encodeURIComponent(user1.value)+'&pwd1='+encodeURIComponent(pwd1.value)+'&pri1='+pri1.selectedIndex+'&user2='+encodeURIComponent(user2.value)+'&pwd2='+encodeURIComponent(pwd2.value)+'&pri2='+pri2.selectedIndex+'&user3='+encodeURIComponent(user3.value)+'&pwd3='+encodeURIComponent(pwd3.value)+'&pri3='+pri3.selectedIndex+'&user4='+encodeURIComponent(user4.value)+'&pwd4='+encodeURIComponent(pwd4.value)+'&pri4='+pri4.selectedIndex+'&user5='+encodeURIComponent(user5.value)+'&pwd5='+encodeURIComponent(pwd5.value)+'&pri5='+pri5.selectedIndex+'&user6='+encodeURIComponent(user6.value)+'&pwd6='+encodeURIComponent(pwd6.value)+'&pri6='+pri6.selectedIndex+'&user7='+encodeURIComponent(user7.value)+'&pwd7='+encodeURIComponent(pwd7.value)+'&pri7='+pri7.selectedIndex+'&user8='+encodeURIComponent(user8.value)+'&pwd8='+encodeURIComponent(pwd8.value)+'&pri8='+pri8.selectedIndex;
+	location=url;
+}
+</script>	
+<body onLoad="body_onload()">
+<table width="640" height="480">
+<tr><td class="v1 pad2 bc4"><table width="100%" class="v2 h2 f14 mid01">
+	<tr height="25"><td colspan="3" class="bc1 mid02"><strong><script>document.write(top.str_users_config);</script></strong></td></tr>
+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_user);</script></td><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_pwd);</script></td><td class="bc2 mid02" width="20%">&nbsp;&nbsp;<script>document.write(top.str_group);</script></td></tr>
+	<tr height="25"><td class="mid04"><input id="user1" maxlength="12"></td><td class="mid04"><input id="pwd1" type="password" maxlength="12"></td><td class="mid02"><select id="pri1"><script>document.write(top.str_pri_list);</script></select></td></tr>
+	<tr height="25"><td class="mid04"><input id="user2" maxlength="12"></td><td class="mid04"><input id="pwd2" type="password" maxlength="12"></td><td class="mid02"><select id="pri2"><script>document.write(top.str_pri_list);</script></select></td></tr>
+	<tr height="25"><td class="mid04"><input id="user3" maxlength="12"></td><td class="mid04"><input id="pwd3" type="password" maxlength="12"></td><td class="mid02"><select id="pri3"><script>document.write(top.str_pri_list);</script></select></td></tr>
+	<tr height="25"><td class="mid04"><input id="user4" maxlength="12"></td><td class="mid04"><input id="pwd4" type="password" maxlength="12"></td><td class="mid02"><select id="pri4"><script>document.write(top.str_pri_list);</script></select></td></tr>
+	<tr height="25"><td class="mid04"><input id="user5" maxlength="12"></td><td class="mid04"><input id="pwd5" type="password" maxlength="12"></td><td class="mid02"><select id="pri5"><script>document.write(top.str_pri_list);</script></select></td></tr>
+	<tr height="25"><td class="mid04"><input id="user6" maxlength="12"></td><td class="mid04"><input id="pwd6" type="password" maxlength="12"></td><td class="mid02"><select id="pri6"><script>document.write(top.str_pri_list);</script></select></td></tr>
+	<tr height="25"><td class="mid04"><input id="user7" maxlength="12"></td><td class="mid04"><input id="pwd7" type="password" maxlength="12"></td><td class="mid02"><select id="pri7"><script>document.write(top.str_pri_list);</script></select></td></tr>
+	<!--<tr height="25"><td class="mid04"><input id="user8" maxlength="12"></td><td class="mid04"><input id="pwd8" type="password" maxlength="12"></td><td class="mid02"><select id="pri8"><script>document.write(top.str_pri_list);</script></select></td></tr>-->
+	<tr height="25"><td class="mid03" colspan="3"><button onClick="set_users()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+</table></td></tr>
+<tr>
+<td class="v1 pad2 bc4">
+<table id ="path_table"  width=100% class="v2 h2 f14 mid01">
+<tr height="25">
+    <td  height="25"><font face="Arial"><script language="javascript">document.write(top.str_RECPath);</script></font></td>&nbsp;&nbsp;
+    <td class="mid04"><input type="text" id="browse_path" value="" width="200" height="25"></td>
+    <td class="mid04"><input type="button" id="browse_btn" value="Browse..." height="25" onClick="set_RecordPath();"></td>
+</tr>
+<tr height="25">
+    <td height="31"><font face="Arial"><script language="javascript">document.write(top.str_AlarmPath);</script></font></td>&nbsp;&nbsp;
+    <td class="mid04"><input type="text" id="alarm_browse_path" value="" width="200" height="25"></td>
+    <td class="mid04"><input type="button" id="alarm_browse_btn" value="Browse..." onClick="set_AlarmRecordPath();"></td>
+</tr>
+</table></td></tr>
+</table>
+<OBJECT id=ipcam style="LEFT: 0px; TOP: 0px" codeBase="codebase/DVM_IPCam2.ocx#version=0,0,0,39" height=0 width=0 
+classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="26"><PARAM NAME="_ExtentY" VALUE="26"><PARAM NAME="_StockProps" VALUE="0"></OBJECT>
+
+
+<script language = "javascript">
+
+function IsWindowsVistaSystem()
+{
+	var str = navigator.userAgent.split(";");
+	if(str[2] == " Windows NT 6.0")
+		return true;
+	else
+		return false;
+}
+
+var RecordPath;
+var AlarmRecordPath;
+RecordPath=ipcam.GetRecordPath();
+AlarmRecordPath=ipcam.GetAlarmRecordPath();
+browse_path.value=RecordPath;
+alarm_browse_path.value=AlarmRecordPath;
+
+function GetSystemDiskLetter()
+{
+	return "C:\\";
+}
+
+function set_RecordPath()
+{
+	var	re = ipcam.SetRecordPath();
+	/*if(re==0)
+	{
+		RecordPath=ipcam.GetRecordPath();
+		var str = GetSystemDiskLetter();
+		if(str == RecordPath && IsWindowsVistaSystem())
+		{
+			window.alert("Set The Recording Path Fail,Cant't Set Windows System Root Directory As The Recording Path!");
+		}else
+		{
+			RecordPath=ipcam.GetRecordPath();
+			browse_path.value=RecordPath;
+			alert("Set The Recording Path Success");
+		}
+	}*/
+	RecordPath=ipcam.GetRecordPath();
+	var str = GetSystemDiskLetter();
+	while(str == RecordPath && IsWindowsVistaSystem())
+	{
+		window.alert(top.str_RECPathfailC/*"Set The Recording Path Fail,Cant't Set Windows System Root Directory As The Recording Path!"*/);
+		re = ipcam.SetRecordPath();
+		RecordPath=ipcam.GetRecordPath();
+	}
+	
+	if(re == 0)
+	{
+		RecordPath=ipcam.GetRecordPath();
+		browse_path.value=RecordPath;
+		alert(top.str_RECPathSuccess/*"Set The Recording Path Success"*/);
+	}
+	if(re==-7)
+	{
+		if(IsWindowsVistaSystem()) //vista
+		alert(top.str_SetTrustedSites/*"To record video,you must add your device's ip address to IE's trusted sites!"+"\n"+"the 'Trusted sites' path: IE browser->Tool->Internet Options->Security->Trusted sites->Sites->Add"*/); 
+		else
+		{
+			alert(top.str_RECPathFail);
+		}
+	}
+	
+}
+
+function set_AlarmRecordPath()
+{
+	var re = ipcam.SetAlarmRecordPath();
+	/*if(re==0)
+	{
+		AlarmRecordPath=ipcam.GetAlarmRecordPath();
+		var str = GetSystemDiskLetter();
+		if(str == AlarmRecordPath && IsWindowsVistaSystem())
+		{
+			window.alert("Set The Alarm Path Fail,Cant't Set Windows System Root Directory As the Alarm Path!");
+		}else
+		{
+			AlarmRecordPath=ipcam.GetAlarmRecordPath();
+			alarm_browse_path.value=AlarmRecordPath;
+			alert("Set The Alarm Path Success");
+		}
+	}*/
+	AlarmRecordPath=ipcam.GetAlarmRecordPath();
+	var str = GetSystemDiskLetter();
+	while(str == AlarmRecordPath && IsWindowsVistaSystem())
+	{
+		window.alert(top.str_AlarmPathFailC/*"Set The Alarm Path Fail,Cant't Set Windows System Root Directory As the Alarm Path!"*/);
+		re = ipcam.SetAlarmRecordPath();
+		AlarmRecordPath=ipcam.GetAlarmRecordPath();
+	}
+	if(0 == re)
+	{
+		AlarmRecordPath=ipcam.GetAlarmRecordPath();
+		alarm_browse_path.value=AlarmRecordPath;
+		alert(top.str_AlarmPathSuccess/*"Set The Alarm Path Success"*/);
+	}
+	if(re==-7)
+	{
+		if(IsWindowsVistaSystem()) //vista
+		alert(top.str_SetTrustedSites/*"To record video,you must add your device's ip address to IE's trusted sites!"+"\n"+"the 'Trusted sites' path: IE browser->Tool->Internet Options->Security->Trusted sites->Sites->Add"*/); 
+		else
+		{
+			alert(top.str_AlarmPathFail/*"Set The Alarm Path Fail!"*/);
+		}
+	}
+}
+
+</script>
+</body>
+</html>

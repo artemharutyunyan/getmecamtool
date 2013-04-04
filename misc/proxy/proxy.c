@@ -13,7 +13,7 @@
 #include <fcntl.h>
 #include <sys/select.h>
 
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS 10
 
 typedef enum {
   UNDEFINED = -1,

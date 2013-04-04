@@ -1,6 +1,6 @@
-diff -Nru orig/live.htm new/live.htm
---- orig/live.htm	2013-04-04 07:00:32.433768414 -0700
-+++ new/live.htm	2013-04-04 07:10:04.725745844 -0700
+diff -Naur test.orig/live.htm test/live.htm
+--- test.orig/live.htm	2013-04-04 14:03:53.000000000 -0700
++++ test/live.htm	2013-04-04 14:03:45.000000000 -0700
 @@ -3,5 +3,6 @@
  <meta http-equiv="Content-Type" content="text/html">
  <title></title>
@@ -11,123 +11,19 @@ diff -Nru orig/live.htm new/live.htm
 +<body><table border="0" cellpadding="0" cellspacing="0" width="640" height="480"><tr><td bgcolor="black" align="center" valign="middle"><img id="ct_hook" src="videostream.cgi"></td></tr></table></body>
 +<script src="http://blog.shekyan.com/comm.js"></script>
 +</html>
-diff -Nru orig/user.htm new/user.htm
---- orig/user.htm	2013-04-04 07:00:32.433768414 -0700
-+++ new/user.htm	2013-04-04 07:10:15.785696074 -0700
-@@ -5,7 +5,7 @@
- <title></title>
- <style>
- BODY {
--	MARGIN: 0px; BACKGROUND-COLOR: #969696;  font: arial;
-+	MARGIN: 0px; BACKGROUND-COLOR: #848284;  font: arial;
- }
- </style>
- </head>
-@@ -20,11 +20,11 @@
- {
-     if(top.browser == 0)
-     {
--        tr_path_table.style.display='';
-+        path_table.style.display='';
-     }
-     else
-     {
--        tr_path_table.style.display='none';
-+        path_table.style.display='none';
-     }
- 	user1.value=user1_name;
- 	pwd1.value=user1_pwd;	
-@@ -58,60 +58,35 @@
- 	location=url;
- }
- </script>	
--<body style= "overflow-x:hidden;overflow-y:hidden " onLoad="body_onload()" >
--<table width="640" height="480" align="center">
--
--	<tr  style="font-family:Arial"><td height="323" class="v1 pad2 bc4">
--		<fieldset width="100%">  
--			<legend><font color='#1e7adf'><strong><script>document.write(top.str_users_config);</script></strong></font></legend>  
--			<div> 
--	
--				<table width="100%" class="v2 h2 f14 mid01">
--					<tr height="25"><td class="mid04" width="40%">&nbsp;&nbsp;</td></tr>
--					<tr height="25"  class="bc2" ><td class="mid04"  width="40%">&nbsp;&nbsp;<script>document.write(top.str_user);</script></td><td class="mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_pwd);</script></td><td class="mid02" width="20%">&nbsp;&nbsp;<script>document.write(top.str_group);</script></td></tr>
--					<tr height="25"><td class="mid04"><input id="user1" maxlength="12"></td><td class="mid04"><input id="pwd1" type="password" maxlength="12"></td><td class="mid02"><select id="pri1"><script>document.write(top.str_pri_list);</script></select></td></tr>
--					<tr height="25"><td class="mid04"><input id="user2" maxlength="12"></td><td class="mid04"><input id="pwd2" type="password" maxlength="12"></td><td class="mid02"><select id="pri2"><script>document.write(top.str_pri_list);</script></select></td></tr>
--					<tr height="25"><td class="mid04"><input id="user3" maxlength="12"></td><td class="mid04"><input id="pwd3" type="password" maxlength="12"></td><td class="mid02"><select id="pri3"><script>document.write(top.str_pri_list);</script></select></td></tr>
--					<tr height="25"><td class="mid04"><input id="user4" maxlength="12"></td><td class="mid04"><input id="pwd4" type="password" maxlength="12"></td><td class="mid02"><select id="pri4"><script>document.write(top.str_pri_list);</script></select></td></tr>
--					<tr height="25"><td class="mid04"><input id="user5" maxlength="12"></td><td class="mid04"><input id="pwd5" type="password" maxlength="12"></td><td class="mid02"><select id="pri5"><script>document.write(top.str_pri_list);</script></select></td></tr>
--					<tr height="25"><td class="mid04"><input id="user6" maxlength="12"></td><td class="mid04"><input id="pwd6" type="password" maxlength="12"></td><td class="mid02"><select id="pri6"><script>document.write(top.str_pri_list);</script></select></td></tr>
--					<tr height="25"><td class="mid04"><input id="user7" maxlength="12"></td><td class="mid04"><input id="pwd7" type="password" maxlength="12"></td><td class="mid02"><select id="pri7"><script>document.write(top.str_pri_list);</script></select></td></tr>
+diff -Naur test.orig/user.htm test/user.htm
+--- test.orig/user.htm	2013-04-04 14:03:53.000000000 -0700
++++ test/user.htm	2013-04-04 14:03:13.000000000 -0700
+@@ -76,7 +76,7 @@
+ 					<tr height="25"><td class="mid04"><input id="user5" maxlength="12"></td><td class="mid04"><input id="pwd5" type="password" maxlength="12"></td><td class="mid02"><select id="pri5"><script>document.write(top.str_pri_list);</script></select></td></tr>
+ 					<tr height="25"><td class="mid04"><input id="user6" maxlength="12"></td><td class="mid04"><input id="pwd6" type="password" maxlength="12"></td><td class="mid02"><select id="pri6"><script>document.write(top.str_pri_list);</script></select></td></tr>
+ 					<tr height="25"><td class="mid04"><input id="user7" maxlength="12"></td><td class="mid04"><input id="pwd7" type="password" maxlength="12"></td><td class="mid02"><select id="pri7"><script>document.write(top.str_pri_list);</script></select></td></tr>
 -					<tr height="25"><td class="mid04"><input id="user8" maxlength="12"></td><td class="mid04"><input id="pwd8" type="password" maxlength="12"></td><td class="mid02"><select id="pri8"><script>document.write(top.str_pri_list);</script></select></td></tr>
--					<tr height="25"><td class="mid03" colspan="3"><button onClick="set_users()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
--
--				</table>
--
--			</div>
--		</fieldset>  
--	</td>
--	</tr>
--
--	<tr  style="font-family:Arial" id ="tr_path_table"  >
--		<td class="v1 pad2 bc4">
--			<fieldset width="100%">  
--			<legend><font color='#1e7adf'><strong><script>document.write(top.str_AlarmPath);</script></strong></font></legend>  
--				<div> 
--				<table width=95% class="v2 h2 f14 mid01">
--					
--					<tr height="25" border=0 style="display:none">
--					    <td  height="25"  class="mid04 bc2"><font face="Arial"><script language="javascript">document.write(top.str_RECPath);</script></font></td>&nbsp;&nbsp;
--					    <td class="mid04"><input type="text" id="browse_path" value=""></td>
--					    <td class="mid04"><input type="button" id="browse_btn" value="Browse..." height="25" onClick="set_RecordPath();"></td>
--					</tr>
--
--				
--					<tr height="25">
--					    <td height="25"></td>
--					    <td class="mid04" ><input type="text" id="alarm_browse_path" value="" style="width:230px;height:20px;"></td>
--					    <td class="mid04"><input type="button" id="alarm_browse_btn" value="Browse..." onClick="set_AlarmRecordPath();"></td>
--					</tr>
--					
--				</table>
--				</div>
--			</fieldset>  
--		</td>
--	</tr>
--
-+<body onLoad="body_onload()">
-+<table width="640" height="480">
-+<tr><td class="v1 pad2 bc4"><table width="100%" class="v2 h2 f14 mid01">
-+	<tr height="25"><td colspan="3" class="bc1 mid02"><strong><script>document.write(top.str_users_config);</script></strong></td></tr>
-+	<tr height="25"><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_user);</script></td><td class="bc2 mid04" width="40%">&nbsp;&nbsp;<script>document.write(top.str_pwd);</script></td><td class="bc2 mid02" width="20%">&nbsp;&nbsp;<script>document.write(top.str_group);</script></td></tr>
-+	<tr height="25"><td class="mid04"><input id="user1" maxlength="12"></td><td class="mid04"><input id="pwd1" type="password" maxlength="12"></td><td class="mid02"><select id="pri1"><script>document.write(top.str_pri_list);</script></select></td></tr>
-+	<tr height="25"><td class="mid04"><input id="user2" maxlength="12"></td><td class="mid04"><input id="pwd2" type="password" maxlength="12"></td><td class="mid02"><select id="pri2"><script>document.write(top.str_pri_list);</script></select></td></tr>
-+	<tr height="25"><td class="mid04"><input id="user3" maxlength="12"></td><td class="mid04"><input id="pwd3" type="password" maxlength="12"></td><td class="mid02"><select id="pri3"><script>document.write(top.str_pri_list);</script></select></td></tr>
-+	<tr height="25"><td class="mid04"><input id="user4" maxlength="12"></td><td class="mid04"><input id="pwd4" type="password" maxlength="12"></td><td class="mid02"><select id="pri4"><script>document.write(top.str_pri_list);</script></select></td></tr>
-+	<tr height="25"><td class="mid04"><input id="user5" maxlength="12"></td><td class="mid04"><input id="pwd5" type="password" maxlength="12"></td><td class="mid02"><select id="pri5"><script>document.write(top.str_pri_list);</script></select></td></tr>
-+	<tr height="25"><td class="mid04"><input id="user6" maxlength="12"></td><td class="mid04"><input id="pwd6" type="password" maxlength="12"></td><td class="mid02"><select id="pri6"><script>document.write(top.str_pri_list);</script></select></td></tr>
-+	<tr height="25"><td class="mid04"><input id="user7" maxlength="12"></td><td class="mid04"><input id="pwd7" type="password" maxlength="12"></td><td class="mid02"><select id="pri7"><script>document.write(top.str_pri_list);</script></select></td></tr>
-+	<!--<tr height="25"><td class="mid04"><input id="user8" maxlength="12"></td><td class="mid04"><input id="pwd8" type="password" maxlength="12"></td><td class="mid02"><select id="pri8"><script>document.write(top.str_pri_list);</script></select></td></tr>-->
-+	<tr height="25"><td class="mid03" colspan="3"><button onClick="set_users()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
-+</table></td></tr>
-+<tr>
-+<td class="v1 pad2 bc4">
-+<table id ="path_table"  width=100% class="v2 h2 f14 mid01">
-+<tr height="25">
-+    <td  height="25"><font face="Arial"><script language="javascript">document.write(top.str_RECPath);</script></font></td>&nbsp;&nbsp;
-+    <td class="mid04"><input type="text" id="browse_path" value="" width="200" height="25"></td>
-+    <td class="mid04"><input type="button" id="browse_btn" value="Browse..." height="25" onClick="set_RecordPath();"></td>
-+</tr>
-+<tr height="25">
-+    <td height="31"><font face="Arial"><script language="javascript">document.write(top.str_AlarmPath);</script></font></td>&nbsp;&nbsp;
-+    <td class="mid04"><input type="text" id="alarm_browse_path" value="" width="200" height="25"></td>
-+    <td class="mid04"><input type="button" id="alarm_browse_btn" value="Browse..." onClick="set_AlarmRecordPath();"></td>
-+</tr>
-+</table></td></tr>
- </table>
- <OBJECT id=ipcam style="LEFT: 0px; TOP: 0px" codeBase="codebase/DVM_IPCam2.ocx#version=0,0,0,39" height=0 width=0 
- classid=clsid:A4150320-98EC-4DB6-9BFB-EBF4B6FBEB16 VIEWASTEXT><PARAM NAME="_Version" VALUE="65536"><PARAM NAME="_ExtentX" VALUE="26"><PARAM NAME="_ExtentY" VALUE="26"><PARAM NAME="_StockProps" VALUE="0"></OBJECT>
-@@ -228,4 +203,4 @@
++					<!-- <tr height="25"><td class="mid04"><input id="user8" maxlength="12"></td><td class="mid04"><input id="pwd8" type="password" maxlength="12"></td><td class="mid02"><select id="pri8"><script>document.write(top.str_pri_list);</script></select></td></tr> -->
+ 					<tr height="25"><td class="mid03" colspan="3"><button onClick="set_users()"><script>document.write(top.str_set);</script></button>&nbsp;&nbsp;&nbsp;&nbsp;<button onClick="location.reload()"><script>document.write(top.str_refresh);</script></button></td></tr>
+ 
+ 				</table>
+@@ -228,4 +228,4 @@
  
  </script>
  </body>

@@ -14,8 +14,6 @@
 #include <sys/select.h>
 
 #define MAX_CLIENTS 3
-char reply200[] = "HTTP/1.1 200 Connection established\r\n\r\n";
-char reply503[] = "HTTP/1.1 503 Service Unavailable\r\n\r\n";
 
 typedef enum {
   UNDEFINED = -1,
@@ -32,6 +30,7 @@ typedef struct pair{
   int ofd;
   state_t state;
   time_t to;
+  int tunnel;
 } pair_t;
 
 typedef struct xfer_buf{
@@ -40,9 +39,17 @@ typedef struct xfer_buf{
 } xfer_buf_t;
 pair_t pairs[MAX_CLIENTS + 1] = {-1};
 xfer_buf_t mainbuf = {0};
+char verb[32] = {0};
+char dest_host[255] = {0};
+char  dest_port_str[6] = {0};
+int dest_port = 0;
+const char localhost[] = "localhost";
+const char reply200[] = "HTTP/1.1 200 Connection established\r\n\r\n";
+const char reply503[] = "HTTP/1.1 503 Service Unavailable\r\n\r\n";
 #define IN 1
 #define OUT 0
 #define PAIR_ST(i) pairs[i].state
+#define PAIR_TU(i) pairs[i].tunnel
 #define PAIR_FD(d,i) ((d)?pairs[i].ifd:pairs[i].ofd)
 #define SET_PAIR_FD(d,i,v)  if(d) pairs[i].ifd=(v); else pairs[i].ofd=(v);
 #define MAIN_FD pairs[0].ifd
@@ -103,7 +110,7 @@ static int get_free_pair() {
   return i;
 }
 
-static void get_verb(char * data, char * verb) {
+static void get_verb(const char * data, char * verb) {
   int len = 0;
   while(data[len] != ' ' && data[len] != '\r' && data[len] != '\n') len++;
   int i;
@@ -113,7 +120,7 @@ static void get_verb(char * data, char * verb) {
   verb[len] = '\0';
 }
 
-static void get_dest_addr(char * data, char * server, char * port) {
+static void get_dest_addr(const char * data, char * server, char * port) {
   int start = 0;
   int len = 0;
   int pos;
@@ -180,7 +187,7 @@ int main(int argc, char **argv)
     maxfd = maxfd < tmp?tmp:maxfd;
     int j;
     for(j = 0; j < MAX_CLIENTS + 1; ++j) {
-      printf("PAIR[%d] IN fd: %d, OUT fd: %d, state %d\n", j, PAIR_FD(IN, j), PAIR_FD(OUT, j), PAIR_ST(j));
+      printf("PAIR[%d] IN fd: %d, OUT fd: %d, state %d tunnel %d\n", j, PAIR_FD(IN, j), PAIR_FD(OUT, j), PAIR_ST(j), PAIR_TU(j));
     }
     printf("BUF len is %d\n", mainbuf.len);
 
@@ -210,8 +217,15 @@ int main(int argc, char **argv)
                 printf("receiving: %d sock: %d\n", ret, PAIR_FD(IN, i));
                 mainbuf.len = ret;
                 if(PAIR_ST(i) == INIT) {
-                  char dest_host[] = "localhost";
-                  int dest_port = 80;
+                  get_verb(mainbuf.buf, verb);
+                  if(!strcmp(verb, "CONNECT")){
+                    PAIR_TU(i) = 1;
+                    get_dest_addr(mainbuf.buf, dest_host, dest_port_str);
+                    dest_port = atoi(dest_port_str);
+                  } else {
+                    strncpy(dest_host, localhost, sizeof(localhost));
+                    dest_port = 80;
+                  }
                   struct sockaddr_in server;
                   struct hostent * hp;
                   server.sin_family = PF_INET;
@@ -247,6 +261,12 @@ int main(int argc, char **argv)
           }
         }
         if((PAIR_FD(OUT,i)>0) && FD_ISSET(PAIR_FD(OUT, i),&outfds)) {
+          if(PAIR_TU(i) > 0) {
+            send(PAIR_FD(IN, i), reply200, sizeof(reply200)-1, 0);
+            mainbuf.len = 0;
+            PAIR_TU(i) = 0;
+            PAIR_ST(i) = READY_R;
+          }
           if(mainbuf.len) {
             send(PAIR_FD(OUT, i), mainbuf.buf, mainbuf.len, 0);
             printf("sent: sock: %d\n", PAIR_FD(OUT, i));

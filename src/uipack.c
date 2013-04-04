@@ -361,7 +361,7 @@ webui_append_fentry(const webui_fentry * fentry, webui_data_blob * blob)
 {
     // Make sure there is enough memory allocaed
     if (blob->alloc_size < (blob->size + get_fentry_size(fentry))) {
-        fprintf(stderr, "Memory limit exceeded. Packed data can be at most %ul bytes", blob->alloc_size);
+        fprintf(stderr, "Memory limit exceeded.\n");
         exit(1);
     }
     // Copy file entry fields into the blob
@@ -408,7 +408,7 @@ webui_append_dentry(const webui_dentry * dentry, webui_data_blob * blob)
 
     // Make sure there is enough memory allocaed
     if (blob->alloc_size < (blob->size + get_dentry_size(dentry))) {
-        fprintf(stderr, "Memory limit exceeded. Packed data can be at most %ul bytes", blob->alloc_size);
+        fprintf(stderr, "Memory limit exceeded.\n");
         exit(1);
     }
     // Copy file entry fields into the blob

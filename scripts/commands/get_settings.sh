@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Add command to the array
 # export CMD_LIST=("${CMD_LIST[@]}" get_settings)
 

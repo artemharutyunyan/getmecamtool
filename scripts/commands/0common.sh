@@ -66,6 +66,33 @@ get_webui_version()
     fi
 }
 
+get_network_params()
+{
+    validate_admin
+    validate_curl
+   
+    ALL_ENTRIES=$($CURL -s $ADDR/get_params.cgi'?user='$USERNAME'&pwd='$PASSWORD) 
+    REGEX_IP="ip='(.+)'"
+    REGEX_MASK="mask='(.+)'"
+    REGEX_GW="gateway='(.+)'"
+    REGEX_DNS="dns='(.+)'"
+    REGEX_PORT="^port=(.+);"
+
+    for e in $ALL_ENTRIES; do
+        if [[ $e =~ $REGEX_IP ]]; then
+            IP=${BASH_REMATCH[1]}
+        elif [[ $e =~ $REGEX_MASK ]]; then
+            MASK=${BASH_REMATCH[1]}
+        elif [[ $e =~ $REGEX_GW ]]; then
+            GW=${BASH_REMATCH[1]}
+        elif [[ $e =~ $REGEX_DNS ]]; then
+            DNS=${BASH_REMATCH[1]}
+        elif [[ $e =~ $REGEX_PORT ]]; then
+            PORT=${BASH_REMATCH[1]}
+       fi
+    done
+}
+
 RED="\033[31m"
 GREEN="\033[32m"
 DEFAULT="\033[m\017"

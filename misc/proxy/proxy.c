@@ -37,8 +37,8 @@ typedef struct xfer_buf{
   char buf[1460];
   int len;
 } xfer_buf_t;
-pair_t pairs[MAX_CLIENTS + 1] = {-1};
-xfer_buf_t mainbuf = {0};
+pair_t pairs[MAX_CLIENTS + 1];// = {-1};
+xfer_buf_t mainbuf;// = {0};
 char verb[32] = {0};
 char dest_host[255] = {0};
 char  dest_port_str[6] = {0};
@@ -123,7 +123,6 @@ static void get_verb(const char * data, char * verb) {
 static void get_dest_addr(const char * data, char * server, char * port) {
   int start = 0;
   int len = 0;
-  int pos;
   int i;
   while(data[start] != ' ' && data[start] != '\r' && data[start] != '\n') start++;
   start++;
@@ -158,7 +157,10 @@ int main(int argc, char **argv)
     PAIR_ST(tmp) = INIT;
   }
 
-  pairs[0].ifd = socket(PF_INET, SOCK_STREAM, 0);
+  memset (pairs, -1, sizeof(pairs) * (MAX_CLIENTS + 1));
+  memset(&mainbuf, 0, sizeof(mainbuf));
+
+  pairs[0].ifd = socket(AF_INET, SOCK_STREAM, 0);
 
   if(pairs[0].ifd < 0) {
     return 1;
@@ -166,7 +168,7 @@ int main(int argc, char **argv)
   unsigned short port = atoi(argv[1]);
   unsigned short local_port = atoi(argv[2]);
   struct sockaddr_in server;
-  server.sin_family = PF_INET;
+  server.sin_family = AF_INET;
   server.sin_addr.s_addr = INADDR_ANY;
   server.sin_port = htons(port);
   int len = sizeof(server);
@@ -207,7 +209,7 @@ int main(int argc, char **argv)
             if(ix_free_slot > MAX_CLIENTS)
               continue;
             SET_PAIR_FD(IN, ix_free_slot, accept(MAIN_FD, (struct sockaddr *) &client_addr, &client_len));
-            SET_PAIR_FD(OUT, ix_free_slot, socket(PF_INET, SOCK_STREAM, 0));
+            SET_PAIR_FD(OUT, ix_free_slot, socket(AF_INET, SOCK_STREAM, 0));
             set_nonblocking(PAIR_FD(OUT, ix_free_slot));
             PAIR_ST(ix_free_slot) = INIT;
           } else {
@@ -229,7 +231,7 @@ int main(int argc, char **argv)
                   }
                   struct sockaddr_in server;
                   struct hostent * hp;
-                  server.sin_family = PF_INET;
+                  server.sin_family = AF_INET;
                   hp = gethostbyname(dest_host);
                   if(!hp)
                     continue;

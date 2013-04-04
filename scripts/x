@@ -24,6 +24,7 @@ OPTIONS:
     -i <inject username> username to create on the camera
     -l <inject password> password for the new username
     -w <webui patch> absolute path to the Web UI patch file
+    -o <new port> new port the camera firmware should listen on
     -h display this message
 EOF
 }
@@ -42,7 +43,7 @@ SETTINGS_FILE=/tmp/settings$SUFFIX
 EXT_SETTINGS_FILE=/tmp/ext_settings$SUFFIX
 NEW_SETTINGS_FILE=/tmp/new_settings$SUFFIX
 
-while getopts “hu:p:a:c:e:k:s:i:l:w:” OPTION
+while getopts “hu:p:a:c:e:k:s:i:l:w:o:” OPTION
 do
     case $OPTION in
         h)
@@ -55,7 +56,7 @@ do
         u)
             USERNAME=$OPTARG  
             ;;
-         c)
+        c)
             CMD=$OPTARG
             ;;
         p)
@@ -79,6 +80,9 @@ do
         w)
             WEBUI_PATCH=$OPTARG
             ;;
+        o)
+            NEW_PORT=$OPTARG
+            ;;
         ?)
             usage
             exit
@@ -91,8 +95,7 @@ if [[ -z $CMD ]]; then
   exit 1
 fi
 
-run_poison_webui
-exit 0
+#run_inject_proxy
 
 for item in ${CMD_LIST[*]}; do    
     if [[ "$item" == $CMD ]]; then

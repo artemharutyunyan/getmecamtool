@@ -34,7 +34,7 @@ validate_inject_exec()
 
     if [[ -z $EXEC ]] || [[ ! -f $EXEC ]]
     then
-        die "Executable file must be provided (and must exist $EXEC) as an argument to inject_exec command."
+        die "Executable file must be provided (and must exist)"
     fi
 
 }
@@ -72,7 +72,7 @@ run_inject_exec()
     # Copy executable file over and add to init
     cp $EXEC $TMP_SYS_FW_DIR/rom-rw/bin
     EXEC_BASENAME=$(basename $EXEC)
-    sed -i 's/camera\&/camera\&\n'$EXEC_BASENAME' 8888 \&/' $TMP_SYS_FW_DIR/rom-rw/bin/init
+    sed -i 's/camera\&/camera\&\n'$EXEC_BASENAME" $ARG"' \&/' $TMP_SYS_FW_DIR/rom-rw/bin/init
     green "Injected the binary $EXEC into the ROM-FS"
 
     # Genromfs
@@ -88,7 +88,7 @@ run_inject_exec()
     [[ $? == 0 ]] || die "Could not verify integrity of $NEW_FW_FILE"
     echo
     green "Created new firmware image ($NEW_FW_FILE)"
-   
+  
     echo "Trying to upload system firmware to $ADDR"
     # Upload file to the camera
     CODE=$($CURL -s -o /dev/null -w "%{http_code}" \

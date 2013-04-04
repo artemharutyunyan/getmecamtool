@@ -4,7 +4,7 @@ set +e
 
 # Load all the commands 
 for cmd in commands/*.sh; do
-    echo sourcing $cmd
+    #echo sourcing $cmd
     . $cmd 
 done
 
@@ -19,6 +19,10 @@ OPTIONS:
     -u <username> username for accessing the camera
     -p <password> password for accessing the camera  
     -e <exec> path to executable file for injecting to the camera
+    -k <args> arguments with which the executable has to run 
+    -s <path> path to system firmware library folder 
+    -i <inject username> username to create on the camera
+    -l <inject password> password for the new username
     -h display this message
 EOF
 }
@@ -31,41 +35,51 @@ CMD=
 EXEC=
 SYS_FW_LIB=
 WEBUI_LIB=
+SET_USER_PARAM=
 SUFFIX=$(mktemp -u .XXXXXXXXXX)
 SETTINGS_FILE=/tmp/settings$SUFFIX
 EXT_SETTINGS_FILE=/tmp/ext_settings$SUFFIX
 NEW_SETTINGS_FILE=/tmp/new_settings$SUFFIX
 
-while getopts “hu:p:a:c:e:s:” OPTION
+while getopts “hu:p:a:c:e:k:s:i:l:” OPTION
 do
-     case $OPTION in
-         h)
+    case $OPTION in
+        h)
             usage
             exit 1
             ;;
-         a)
+        a)
             ADDR=$OPTARG
             ;;
-         u)
+        u)
             USERNAME=$OPTARG  
             ;;
          c)
             CMD=$OPTARG
             ;;
-         p)
+        p)
             PASSWORD=$OPTARG
             ;;
-         e)
-             EXEC=$OPTARG
+        e)
+            EXEC=$OPTARG
              ;;
-         s)
-             SYS_FW_LIB=$OPTARG
-             ;;
-         ?)
+        k)
+            ARG=$OPTARG
+            ;;
+        s)
+            SYS_FW_LIB=$OPTARG
+            ;;
+        i)
+            NEW_USER=$OPTARG
+            ;;
+        l)
+            NEW_PWD=$OPTARG
+            ;;
+        ?)
             usage
             exit
             ;;
-     esac
+    esac
 done
 
 if [[ -z $CMD ]]; then
@@ -73,6 +87,8 @@ if [[ -z $CMD ]]; then
   exit 1
 fi
 
+run_poison_webui
+exit 0
 
 for item in ${CMD_LIST[*]}; do    
     if [[ "$item" == $CMD ]]; then

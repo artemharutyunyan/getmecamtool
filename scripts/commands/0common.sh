@@ -20,7 +20,19 @@ validate_grep()
     [[ -z $GREP ]] && die "grep not found in \$PATH"
 }
 
+validate_egrep()
+{
+    EGREP=$(which egrep)
+    [[ -z $EGREP ]] && die "egrep not found in \$PATH"
+}
 
+validate_lib()
+{
+    if [[ -z $SYS_FW_LIB ]] || [[ ! -d $SYS_FW_LIB ]]
+    then
+        die "System firmware library directory must be provided (and must exist $SYS_FW_LIB) as an argument to inject_exec command."
+    fi
+}
 
 get_sys_version()
 {
@@ -33,6 +45,22 @@ get_sys_version()
     REGEX=".+'(.+)'.+"
     if [[ "$SYS_VERSION" =~ $REGEX ]]; then
         SYSTEM_VERSION=${BASH_REMATCH[1]}
+    else
+        die "Could not extract system version from $SYS_VERSION"
+    fi
+}
+
+get_webui_version()
+{
+    validate_admin
+    validate_curl
+    validate_grep 
+
+    WEBUI_VERSION=$($CURL -s $ADDR/get_params.cgi'?user='$USERNAME'&pwd='$PASSWORD | $GREP app_ver)
+    [[ $? == 0 ]] || die "Error fetching parameters from $ADDR"
+    REGEX=".+'(.+)'.+"
+    if [[ "$WEBUI_VERSION" =~ $REGEX ]]; then
+        WEBUI_VERSION=${BASH_REMATCH[1]}
     else
         die "Could not extract system version from $SYS_VERSION"
     fi

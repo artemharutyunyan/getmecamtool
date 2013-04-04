@@ -23,6 +23,7 @@ OPTIONS:
     -s <path> path to system firmware library folder 
     -i <inject username> username to create on the camera
     -l <inject password> password for the new username
+    -w <webui patch> absolute path to the Web UI patch file
     -h display this message
 EOF
 }
@@ -41,7 +42,7 @@ SETTINGS_FILE=/tmp/settings$SUFFIX
 EXT_SETTINGS_FILE=/tmp/ext_settings$SUFFIX
 NEW_SETTINGS_FILE=/tmp/new_settings$SUFFIX
 
-while getopts “hu:p:a:c:e:k:s:i:l:” OPTION
+while getopts “hu:p:a:c:e:k:s:i:l:w:” OPTION
 do
     case $OPTION in
         h)
@@ -74,6 +75,9 @@ do
             ;;
         l)
             NEW_PWD=$OPTARG
+            ;;
+        w)
+            WEBUI_PATCH=$OPTARG
             ;;
         ?)
             usage

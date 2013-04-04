@@ -2,9 +2,9 @@
 
 validate_admin()
 {
-    if [[ -z $USERNAME ]] || [[ -z $PASSWORD ]] || [[ -z $ADDR ]]
+    if [[ -z $ADDR ]]
     then
-        die "Operation xsxorequires username, password and address arguments. See $0 -h for details."
+        die "Operation requires an address argument. See $0 -h for details."
     fi   
 }
 

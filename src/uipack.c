@@ -17,7 +17,7 @@
 #include "camtool.h"
 #include "common.h"
 
-#define TODO_HARDCODED_VERSION 0x12120402 
+#define TODO_HARDCODED_VERSION 0x020A0402 
 
 #define WEBUI_DATABLOB_INITIAL_SIZE (1024 * 1024)	// 1 MB
 
@@ -198,7 +198,7 @@ traverse_target_dir (const char* dir_name, webui_data_blob* blob)
   
   // Iterate over entries 
   
-  // First read all the files (skip subdirectories)    
+   // First read all the files (skip subdirectories)    
   struct stat s;
   while ( (dir_entry = readdir (dir)) != NULL  ) {
     full_path[0] = '\0';
@@ -232,7 +232,7 @@ traverse_target_dir (const char* dir_name, webui_data_blob* blob)
       // remove leading .
       f.name_size = strlen (full_path);
       f.name = full_path;
-      f.type = 0; //TODO switch to enum; 
+      f.type = 1; //TODO switch to enum; 
       f.size = s.st_size; 
       // Read contents of the file 
       char buf[MAX_FILE_SIZE];
@@ -272,9 +272,9 @@ traverse_target_dir (const char* dir_name, webui_data_blob* blob)
       //printf ("Found a directory: %s/%s\n", dir_name, dir_entry->d_name);
       create_path (full_path, dir_name, dir_entry->d_name);
       webui_dentry d;
-      d.name_size = strlen (full_path);
+      d.name_size = strlen(full_path);
       d.name = full_path;
-      d.type = 1; //TODO switch to enum;
+      d.type = 0; //TODO switch to enum;
 
       webui_append_dentry (&d, blob);    
        
@@ -403,9 +403,9 @@ webui_append_dentry(const webui_dentry * dentry, webui_data_blob * blob)
 	// Copy file entry fields into the blob 
 	size_t          offset = blob->size;
 
-	// Size of the name field
-	memmove(&blob->data[offset], &dentry->name_size,
-		WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
+	// Size of the name field (doing -1 since the leading . will be removed)
+        int32_t name_size = dentry->name_size - 1;
+	memmove(&blob->data[offset], &name_size, WEBUI_ENTRY_NAME_SIZE_FIELD_LEN);
 	offset += WEBUI_ENTRY_NAME_SIZE_FIELD_LEN;
 
 	// Name field 

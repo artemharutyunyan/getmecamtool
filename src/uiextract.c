@@ -302,7 +302,8 @@ main(int argc, char **argv)
 		} else {
 			fprintf(stdout, "Created directory %s\n", dst_path);
 		}
-		ui_extract_files(file, dst_path);
+		if(!ui_extract_files(file, dst_path))
+      return 1;
 	}
 	fclose(file);
 	fprintf(stdout,

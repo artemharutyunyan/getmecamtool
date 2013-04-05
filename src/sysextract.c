@@ -25,9 +25,9 @@ usage()
 	fprintf(stdout,
 		"Unpack/integrity check tool for system firmware.\n"
 		"Usage: sysextract [-cx] <input file> -o <output dir>\n"
-		"-c <file>        perform integrity check of <file>\n"
-		"-x <file>        extract <file>. Default destination is current working dir\n"
-		"-o <output dir>  output to <output dir>\n");
+		"\t-c <file>        perform integrity check of <file>\n"
+		"\t-x <file>        extract <file>. Default destination is current working dir\n"
+		"\t-o <output dir>  output to <output dir>\n");
 }
 int32_t
 sys_read_header(FILE * f, const sys_header_offset_t type,

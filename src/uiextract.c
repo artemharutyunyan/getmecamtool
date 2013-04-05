@@ -165,7 +165,7 @@ ui_read_entry(FILE * f, const ui_entry_data_type_t type, webui_entry * entry)
 		break;
 	}
 	if (feof(f)) {
-		retval = 0;
+		retval = 2;
 	} else if (ferror(f)) {
 		fprintf(stderr, "Error reading file entry: %s\n", strerror(errno));
 		retval = 0;
@@ -174,18 +174,22 @@ ui_read_entry(FILE * f, const ui_entry_data_type_t type, webui_entry * entry)
 }
 int32_t
 ui_extract_files(FILE * f, const char *dst_path)
-{
+{ 
 	webui_entry     wui_entry = { 0 };
 	// max_buf = 0,
 	char            dst_file[MAX_FILE_NAME_LEN];
 	// *buf = NULL;
-
+  int32_t ret; 
 	while (1) {
 		memset(wui_entry.name, 0, sizeof(wui_entry.name));
 		memset(dst_file, 0, sizeof(dst_file));
 
-		if (!ui_read_entry(f, UI_TYPE_FILENAME_SIZE, &wui_entry))
-			return 0;
+    // check for ret == 2 once a cycle
+		ret = ui_read_entry(f, UI_TYPE_FILENAME_SIZE, &wui_entry);
+    if(!ret)
+      return 0;
+    else if(2 == ret)
+      break;
 
 		if (!ui_read_entry(f, UI_TYPE_FILENAME, &wui_entry))
 			return 0;
@@ -302,7 +306,7 @@ main(int argc, char **argv)
 		} else {
 			fprintf(stdout, "Created directory %s\n", dst_path);
 		}
-		if(!ui_extract_files(file, dst_path))
+    if(!ui_extract_files(file, dst_path))
       return 1;
 	}
 	fclose(file);

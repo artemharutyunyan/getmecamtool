@@ -103,7 +103,7 @@ sys_validate_header(FILE * f, sys_file_header * file_header)
 		return 0;
 	}
 	fprintf(stdout,
-		"System firmware file has valid structure\nlinux.bin size: %d, romfs.img size: %d\n",
+		"System firmware file has valid structure\nlinux.bin size: %d bytes, romfs.img size: %d bytes\n",
 		file_header->size_linux, file_header->size_romfs);
 	return 1;
 }
@@ -207,7 +207,9 @@ main(int argc, char **argv)
 
 	if (!strlen(dst_path)) {
 		strncpy(dst_path, DEFAULT_PATH, sizeof(DEFAULT_PATH));
-	}
+	} else {
+    strncat(dst_path, "/", 1);
+  }
 	FILE           *file = fopen(in_file_name, "rb");
 	if (!file) {
 		fprintf(stderr, "Error opening file %s: %s\n", in_file_name,
@@ -232,6 +234,7 @@ main(int argc, char **argv)
 		}
 		if (!sys_extract_files(file, dst_path)) {
 			fprintf(stderr, "Cannot extract system files, exiting...\n");
+      return 1;
 		}
 	}
 

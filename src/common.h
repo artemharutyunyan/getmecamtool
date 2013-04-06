@@ -1,8 +1,19 @@
 /*
-
-  TODO: Header goes here 
-
-*/
+ * Copyright 2013 Artem Harutyunyan, Sergey Shekyan
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
 #ifndef __COMMON_H
 #define __COMMON_H
 
@@ -28,50 +39,50 @@ extern const int32_t conf_header_field[];
 extern const int32_t conf_sections_field[];
 
 typedef enum {
-	UI_OFFSET_SIZE_v1 = 0,
-	UI_OFFSET_VERSION_v1,
-	UI_OFFSET_DESC,
-	UI_OFFSET_FIRST_FILE_v1,
-	UI_OFFSET_MAGIC,
-	UI_OFFSET_CHECKSUM,
-	UI_OFFSET_SIZE_v2,
-	UI_OFFSET_VERSION_v2,
-	UI_OFFSET_FIRST_FILE_v2
+    UI_OFFSET_SIZE_v1 = 0,
+    UI_OFFSET_VERSION_v1,
+    UI_OFFSET_DESC,
+    UI_OFFSET_FIRST_FILE_v1,
+    UI_OFFSET_MAGIC,
+    UI_OFFSET_CHECKSUM,
+    UI_OFFSET_SIZE_v2,
+    UI_OFFSET_VERSION_v2,
+    UI_OFFSET_FIRST_FILE_v2
 } ui_header_offset_t;
 
 typedef enum {
-	SYS_OFFSET_MAGIC = 0,
-	SYS_OFFSET_RESERVE1,
-	SYS_OFFSET_RESERVE2,
-	SYS_OFFSET_SIZE_LINUX_BIN,
-	SYS_OFFSET_SIZE_ROMFS
+    SYS_OFFSET_MAGIC = 0,
+    SYS_OFFSET_RESERVE1,
+    SYS_OFFSET_RESERVE2,
+    SYS_OFFSET_SIZE_LINUX_BIN,
+    SYS_OFFSET_SIZE_ROMFS
 } sys_header_offset_t;
 
 typedef enum {
-	UI_TYPE_FILENAME_SIZE = 0,
-	UI_TYPE_FILENAME,
-	UI_TYPE_ENTRY_TYPE,
-	UI_TYPE_FILE_SIZE,
-	UI_TYPE_FILE
+    UI_TYPE_FILENAME_SIZE = 0,
+    UI_TYPE_FILENAME,
+    UI_TYPE_ENTRY_TYPE,
+    UI_TYPE_FILE_SIZE,
+    UI_TYPE_FILE
 } ui_entry_data_type_t;
 
 typedef enum {
-  CONF_OFFSET_MAGIC = 0,
-	CONF_OFFSET_CHECKSUM,
-	CONF_OFFSET_RESERVE,
-	CONF_OFFSET_CAMID,
-	CONF_OFFSET_SYS_VER,
-  CONF_OFFSET_UI_VER,
-  CONF_OFFSET_ALIAS
+    CONF_OFFSET_MAGIC = 0,
+    CONF_OFFSET_CHECKSUM,
+    CONF_OFFSET_RESERVE,
+    CONF_OFFSET_CAMID,
+    CONF_OFFSET_SYS_VER,
+    CONF_OFFSET_UI_VER,
+    CONF_OFFSET_ALIAS
 } conf_header_offset_t;
 
 typedef enum {
-  CONF_OFFSET_USERS = 0,
-  CONF_OFFSET_NETWORK,
-  CONF_OFFSET_ADSL,
-  CONF_OFFSET_WIFI,
-  CONF_OFFSET_NTP,
-  CONF_OFFSET_EMAIL
+    CONF_OFFSET_USERS = 0,
+    CONF_OFFSET_NETWORK,
+    CONF_OFFSET_ADSL,
+    CONF_OFFSET_WIFI,
+    CONF_OFFSET_NTP,
+    CONF_OFFSET_EMAIL
 } conf_sections_offset_t;
 
 //Function definitions

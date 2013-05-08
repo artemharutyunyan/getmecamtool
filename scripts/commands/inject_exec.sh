@@ -50,7 +50,6 @@ validate_inject_exec()
     then
         die "Executable file must be provided (and must exist)"
     fi
-
 }
 
 run_inject_exec()
@@ -102,7 +101,12 @@ run_inject_exec()
     [[ $? == 0 ]] || die "Could not verify integrity of $NEW_FW_FILE"
     echo
     green "Created new firmware image ($NEW_FW_FILE)"
-  
+
+    # Perform sanity check
+    SIZE_NEW=$(stat -s "%s" $NEW_FW_FILE)
+    SIZE_ORIG=$(stat -s "%s" $SYS_FW_FILE)
+    [[ $SIZE_NEW -gt $SIZE_OLD ]] || die "The size of the new firmware file can not be smaller than the size of the original file"
+
     echo "Trying to upload system firmware to $ADDR"
     # Upload file to the camera
     CODE=$($CURL -s -o /dev/null -w "%{http_code}" \

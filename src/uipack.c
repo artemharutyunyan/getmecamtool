@@ -106,7 +106,7 @@ defalt:
     }
     
 
-    webui_data_blob* blob;
+    webui_data_blob *blob = malloc(sizeof(webui_data_blob));
     // Initialize the blob
     int32_t first_file_offset = ui_header_field[UI_OFFSET_FIRST_FILE_v2];
     webui_data_blob_init(blob, first_file_offset);
@@ -323,7 +323,8 @@ get_file_content(const char *path, const size_t size, char *o)
 int
 webui_data_blob_init(webui_data_blob * blob, size_t offset)
 {
-
+    size_t s = WEBUI_DATABLOB_INITIAL_SIZE * 2;
+	printf("size os %d\n", s);	
     blob->data = malloc(WEBUI_DATABLOB_INITIAL_SIZE * 2);
 
     if (blob->data == NULL) {

@@ -13,7 +13,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-set +e
+set -e
 
 # Load all the commands 
 for cmd in commands/*.sh; do
@@ -31,7 +31,7 @@ OPTIONS:
     -a <addr> address of the camera 
     -u <username> username for accessing the camera
     -p <password> password for accessing the camera  
-    -e <exec> path to executable file for injecting to the camera
+    -e <exec> absolute path to executable file for injecting to the camera
     -k <args> arguments with which the executable has to run 
     -s <path> path to system firmware library folder 
     -i <inject username> username to create on the camera

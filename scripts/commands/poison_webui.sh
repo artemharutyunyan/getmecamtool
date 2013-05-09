@@ -72,7 +72,7 @@ run_poison_webui()
     TEMPFILE=$(tempfile)
 
     # Locate Web UI
-    WEBUI_FILE=$SYS_FW_LIB/web/$WEBUI_VERSION/$WEBUI_VERSION.bin
+    WEBUI_FILE=$SYS_FW_LIB/web/$WEBUI_VERSION*.bin
     [[ -f $WEBUI_FILE ]] || die "$WEBUI_FILE does not exist. Aborting run_poison_webui"
     green "Found matching Web UI version"
    

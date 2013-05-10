@@ -13,7 +13,22 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-set -e
+
+onexit()
+{
+    if [[ -n $PORT_CHANGED ]] && [[ -z $PROXY_INJECT_DONE ]]
+    then
+        red "Port has been changed. Need to change port back"
+        CODE=$($CURL -s -o /dev/null -w "%{http_code}" \
+        $ADDR/set_network.cgi'?user='$USERNAME'&pwd='$PASSWORD'&ip='$IP'&mask='$MASK'&dns='$DNS'&gateway='$GW'&port='$PORT_CHANGED
+        )
+        
+        [[ $CODE == 200 ]] || die "Could not restore port settings"
+        green "Successfully restored port setting"
+    fi
+}
+
+trap onexit EXIT
 
 # Load all the commands 
 for cmd in commands/*.sh; do
@@ -37,6 +52,7 @@ OPTIONS:
     -i <inject username> username to create on the camera
     -l <inject password> password for the new username
     -w <webui patch> absolute path to the Web UI patch file
+    -f <file> absolute path to the file for hosting on the camera
     -o <new port> new port the camera firmware should listen on
     -h display this message
 EOF
@@ -55,8 +71,12 @@ SUFFIX=$(mktemp -u .XXXXXXXXXX)
 SETTINGS_FILE=/tmp/settings$SUFFIX
 EXT_SETTINGS_FILE=/tmp/ext_settings$SUFFIX
 NEW_SETTINGS_FILE=/tmp/new_settings$SUFFIX
+PORT_CHANGED=
+PROXY_INJECT_DONE=
+HOST_FILE=
+DONE=
 
-while getopts “hu:p:a:c:e:k:s:i:l:w:o:” OPTION
+while getopts “hu:p:a:c:e:k:s:i:l:w:f:o:” OPTION
 do
     case $OPTION in
         h)
@@ -92,6 +112,9 @@ do
             ;;
         w)
             WEBUI_PATCH=$OPTARG
+            ;;
+        f) 
+            HOST_FILE=$OPTARG
             ;;
         o)
             NEW_PORT=$OPTARG

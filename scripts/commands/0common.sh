@@ -25,19 +25,21 @@ validate_admin()
 validate_curl()
 {
     CURL=$(which curl)
-    [[ -z $CURL ]] && die "curl not found in \$PATH"
+    if [ -z $CURL ]; then
+	die "curl not found in \$PATH"
+    fi
 }
 
 validate_grep()
 {
     GREP=$(which grep)
-    [[ -z $GREP ]] && die "grep not found in \$PATH"
+    [[ ! -z $GREP ]] || die "grep not found in \$PATH"
 }
 
 validate_egrep()
 {
     EGREP=$(which egrep)
-    [[ -z $EGREP ]] && die "egrep not found in \$PATH"
+    [[ ! -z $EGREP ]] || die "egrep not found in \$PATH"
 }
 
 validate_lib()
@@ -126,5 +128,4 @@ die()
   red "$1"
   exit 1
 }
-
 

@@ -35,7 +35,9 @@ validate_inject_proxy()
 run_inject_proxy()
 {
     validate_inject_proxy
-    
+
+    [[ $PORT != $NEW_PORT  ]] || die "New port value can not be the same as current port value ($PORT)"
+   
     echo "Trying to change port from $PORT to $NEW_PORT"
     # Change port number 
     CODE=$($CURL -s -o /dev/null -w "%{http_code}" \
@@ -45,12 +47,13 @@ run_inject_proxy()
     [[ $CODE == 200 ]] || die "Could not change port settings"
     green "Successfully changed port setting"
 
-    [[ $PORT != $NEW_PORT  ]] || die "New port value can not be the same as current port value ($PORT)"
+    PORT_CHANGED=$PORT
 
     ARG="$PORT $NEW_PORT"
     echo $ARGS 
     
     run_inject_exec
+    PROXY_INJECT_DONE=1
 }
 
 

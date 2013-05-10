@@ -119,6 +119,9 @@ run_poison_webui()
         $ADDR/upgrade_htmls.cgi'?next_url=reboot.htm&user='$USERNAME'&pwd='$PASSWORD)
     [[ $CODE == 200 ]] || die "Uploading Web UI to $ADDR failed $CODE $TEMPFILE"
     green "Successfully uploaded Web UI and rebooted $ADDR"
+  
+    # Cleanup
+    rm -rf $TMP_WEBUI_ROOT
 }
 
 

@@ -20,20 +20,20 @@ export CMD_LIST=("${CMD_LIST[@]}" inject_exec)
 validate_syspack()
 {
     SYSPACK=$(which syspack)
-    [[ -z $SYSPACK ]] && die "syspack not found in \$PATH"
+    [[ ! -z $SYSPACK ]] || die "syspack not found in \$PATH"
 }
 
 
 validate_sysextract()
 {
     SYSEXTRACT=$(which sysextract)
-    [[ -z $SYSEXTRACT ]] && die "sysextract not found in \$PATH"
+    [[ ! -z $SYSEXTRACT ]] || die "sysextract not found in \$PATH"
 }
 
 validate_genromfs()
 {
     GENROMFS=$(which genromfs)
-    [[ -z $GENROMFS ]] && die "genromfs not found in \$PATH"
+    [[ ! -z $GENROMFS ]] || die "genromfs not found in \$PATH"
 }
 
 validate_inject_exec()
@@ -78,6 +78,7 @@ run_inject_exec()
     # Mount romfs and make a rw copy 
     mkdir -p $TMP_SYS_FW_DIR/rom $TMP_SYS_FW_DIR/rom-rw
     mount -o loop $TMP_SYS_FW_DIR/romfs.img $TMP_SYS_FW_DIR/rom >/dev/null 2>&1
+    [[ $? == 0 ]] || die "Could not mount romfs image. Try running the script as root"
     cp -R $TMP_SYS_FW_DIR/rom/* $TMP_SYS_FW_DIR/rom-rw
     umount $TMP_SYS_FW_DIR/rom
     green "Mounted the ROM-FS image"
@@ -103,9 +104,9 @@ run_inject_exec()
     green "Created new firmware image ($NEW_FW_FILE)"
 
     # Perform sanity check
-    SIZE_NEW=$(stat -s "%s" $NEW_FW_FILE)
-    SIZE_ORIG=$(stat -s "%s" $SYS_FW_FILE)
-    [[ $SIZE_NEW -gt $SIZE_OLD ]] || die "The size of the new firmware file can not be smaller than the size of the original file"
+    SIZE_NEW=$(stat -c "%s" $NEW_FW_FILE)
+    SIZE_ORIG=$(stat -c "%s" $SYS_FW_FILE)
+    [[ $SIZE_NEW -gt $SIZE_ORIG ]] || die "The size of the new firmware file can not be smaller than the size of the original file"
 
     echo "Trying to upload system firmware to $ADDR"
     # Upload file to the camera
@@ -115,6 +116,10 @@ run_inject_exec()
     )
         
     [[ $CODE == 200 ]] || die "Uploading firmware to $ADDR failed"
-    green "Successfully uploaded firmware and rebooted $ADDR"
+    green "Successfully uploaded firmware on $ADDR:$NEW_PORT. Rebooting..."
+    
+    # Cleanup
+    rm -rf $TMP_SYS_FW_DIR
 }
+
 

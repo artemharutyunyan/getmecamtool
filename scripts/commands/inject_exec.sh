@@ -56,8 +56,9 @@ run_inject_exec()
 {
     validate_inject_exec    
 
-    # Locate sys firmware 
-    SYS_FW_FILE=$SYS_FW_LIB/sys/$SYSTEM_VERSION/lr_cmos_$SYSTEM_VERSION.bin
+    # Locate sys firmware
+    SYSTEM_VERSION_UNDER=${SYSTEM_VERSION//./_}    
+    SYS_FW_FILE=$SYS_FW_LIB/sys/lr_cmos_$SYSTEM_VERSION_UNDER.bin
     [[ -f $SYS_FW_FILE ]] || die "$SYS_FW_FILE does not exist. Aborting run_inject_exec"
     green "Found matching system firmware in the library"
 
@@ -96,7 +97,7 @@ run_inject_exec()
     green "Generated new ROM-FS image"
 
     # Pack and verify integrity
-    NEW_FW_FILE=$TMP_SYS_FW_DIR/new/lr_cmos_$SYSTEM_VERSION.bin
+    NEW_FW_FILE=$TMP_SYS_FW_DIR/new/lr_cmos_$SYSTEM_VERSION_UNDER.bin
     $SYSPACK -k $TMP_SYS_FW_DIR/linux.bin -i $TMP_SYS_FW_DIR/new/romfs.img -o $NEW_FW_FILE 
     $SYSEXTRACT -c $NEW_FW_FILE
     [[ $? == 0 ]] || die "Could not verify integrity of $NEW_FW_FILE"

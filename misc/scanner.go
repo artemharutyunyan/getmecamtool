@@ -38,6 +38,18 @@ func process(response string) bool {
     } 
   } 
   return false 
+}
+
+func get_version(response string) string {
+
+  body := strings.Split(response, "\r\n\r\n")
+  t := strings.Split(body[1], "\n")
+  for _, i := range t {
+    if strings.HasPrefix(i, "var sys_ver=") {
+      return strings.Split(i, "=")[1]
+    }
+  }
+  return "undefined"
 } 
  
 func resolve(prefix string) { 
@@ -51,13 +63,13 @@ func resolve(prefix string) {
         if err == nil { 
                                         // Make sure the connection will be closed. 
           conn.SetDeadline(time.Now().Add(*processTimeout)) 
-          _, err = conn.Write([]byte("GET / HTTP/1.0\r\n\r\n")) 
+          _, err = conn.Write([]byte("GET /get_status.cgi HTTP/1.0\r\n\r\n")) 
           if err == nil { 
             result, err := ioutil.ReadAll(conn) 
             if err == nil { 
               response := string(result) 
               if process(response) { 
-                fmt.Printf("%v %v success %s\n", full, addr, p) 
+                fmt.Printf("%v %v success %s %s\n", full, addr, p, get_version(response)) 
               } else { 
                 fmt.Printf("%v %v other %s\n", full, addr, p) 
               }

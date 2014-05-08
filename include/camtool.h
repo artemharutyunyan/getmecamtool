@@ -18,6 +18,8 @@
 
 #define MAX_FILE_SIZE 2*1048576
 
+#define MAX_HOSTNAME_LEN 256
+
 // !Web UI data blob
 typedef struct webui_data_blob_t {
 	size_t        size;

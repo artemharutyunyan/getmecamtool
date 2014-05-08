@@ -30,3 +30,6 @@ TARGET_LINK_LIBRARIES (confextract ${CAMTOOL_LIBS})
 ADD_EXECUTABLE ( confpack confpack.c ) 
 TARGET_LINK_LIBRARIES (confpack ${CAMTOOL_LIBS})
 
+# DDNS utility compilation
+ADD_EXECUTABLE ( dnsmod dnsmod.c )
+
